@@ -10,7 +10,8 @@ import {
   CreditCard,
   HelpCircle,
   Sparkles,
-  LogOut
+  LogOut,
+  Store
 } from 'lucide-react'
 
 interface DashboardLayoutProps {
@@ -54,8 +55,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     router.push('/login')
   }
 
+  const handleNavigation = (itemId: string) => {
+    setSelectedSidebarItem(itemId)
+    if (itemId === 'store') {
+      router.push('/dashboard/store')
+    } else if (itemId === 'chat') {
+      router.push('/dashboard')
+    }
+    // Add other navigation logic as needed
+  }
+
   const sidebarItems = [
-    { id: 'chat', icon: MessageSquare, label: 'AI Chat', color: 'text-blue-600' },
+    { id: 'chat', icon: MessageSquare, label: 'Dashboard', color: 'text-blue-600' },
+    { id: 'store', icon: Store, label: 'Store Information', color: 'text-indigo-600' },
     { id: 'analytics', icon: BarChart3, label: 'Analytics', color: 'text-green-600' },
     { id: 'products', icon: ShoppingBag, label: 'Products', color: 'text-purple-600' },
     { id: 'customers', icon: Users, label: 'Customers', color: 'text-orange-600' },
@@ -98,7 +110,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             return (
               <button
                 key={item.id}
-                onClick={() => setSelectedSidebarItem(item.id)}
+                onClick={() => handleNavigation(item.id)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                   selectedSidebarItem === item.id
                     ? 'bg-blue-50 text-blue-700 border border-blue-200'

@@ -37,6 +37,13 @@ export default function StorePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  interface ActivityItem {
+    type: 'order' | 'product' | 'customer' | 'revenue'
+    message: string
+    time: string
+    amount?: number
+  }
+
   // Store data state
   const [storeData, setStoreData] = useState({
     basicInfo: {
@@ -62,7 +69,7 @@ export default function StorePage() {
       sslEnabled: true,
       seoOptimized: true
     },
-    recentActivity: [],
+    recentActivity: [] as ActivityItem[],
     quickStats: {
       todayOrders: 0,
       todayRevenue: 0,
@@ -102,20 +109,37 @@ export default function StorePage() {
       setIsLoading(true)
       setError(null)
       
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token')
-      const response = await fetch('http://127.0.0.1:5008/api/woocommerce/setting', {
+      const user = localStorage.getItem('user')
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken')
+      
+      console.log('token', token)
+      console.log('user', user)
+      
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
+      const response = await fetch('http://127.0.0.1:5008/api/woocommerce/settings', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-        }
+          'Accept': 'application/json',
+        },
+        credentials: 'include'
       })
 
+      console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
+
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('API Error:', errorText)
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
+      console.log('API Response:', data)
       setStoreData(data)
       setEditForm(data.basicInfo)
     } catch (error) {
@@ -180,23 +204,37 @@ export default function StorePage() {
       setIsSaving(true)
       setError(null)
       
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token')
-      const response = await fetch('http://127.0.0.1:5008/api/woocommerce/setting', {
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken')
+      
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
+      console.log('Saving with token:', token)
+
+      const response = await fetch('http://127.0.0.1:5008/api/woocommerce/settings', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           basicInfo: editForm
         })
       })
 
+      console.log('Save response status:', response.status)
+
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Save API Error:', errorText)
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const updatedData = await response.json()
+      console.log('Save API Response:', updatedData)
       setStoreData(prev => ({
         ...prev,
         basicInfo: updatedData.basicInfo

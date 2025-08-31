@@ -34,6 +34,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const user = localStorage.getItem('user')
     const token = localStorage.getItem('token') || localStorage.getItem('authToken')
     
+
+    console.log('token from dashboard layout', token)
+
     if (!user || !token) {
       router.push('/login')
       return

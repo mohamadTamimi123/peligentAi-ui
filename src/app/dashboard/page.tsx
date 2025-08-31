@@ -13,7 +13,11 @@ import {
   Users,
   Zap,
   TrendingUp,
-  Lightbulb
+  Lightbulb,
+  Copy,
+  Check,
+  Key,
+  ExternalLink
 } from 'lucide-react'
 import { ChatMessage } from '@/components/chat/ChatMessage'
 import { IntentDetection } from '@/components/chat/IntentDetection'
@@ -30,6 +34,8 @@ export default function DashboardPage() {
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
   const [streamingResponse, setStreamingResponse] = useState('')
+  const [showTokenSection, setShowTokenSection] = useState(false)
+  const [copied, setCopied] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const showTokenPurchaseModal = () => {
@@ -235,6 +241,32 @@ export default function DashboardPage() {
     }
   }
 
+  const copyToken = async () => {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token')
+    if (token) {
+      try {
+        await navigator.clipboard.writeText(token)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch (err) {
+        console.error('Failed to copy token:', err)
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea')
+        textArea.value = token
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      }
+    }
+  }
+
+  const getToken = () => {
+    return localStorage.getItem('authToken') || localStorage.getItem('token') || 'No token found'
+  }
+
   if (!userData) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -260,6 +292,15 @@ export default function DashboardPage() {
           </div>
           
           <div className="flex items-center space-x-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowTokenSection(!showTokenSection)}
+              className="rounded-xl"
+            >
+              <Key className="w-4 h-4 mr-2" />
+              API Token
+            </Button>
             <Button variant="outline" size="sm" onClick={clearChat} className="rounded-xl">
               <RefreshCw className="w-4 h-4 mr-2" />
               Clear Chat
@@ -269,6 +310,97 @@ export default function DashboardPage() {
             </Button>
           </div>
         </div>
+
+        {/* Token Section */}
+        {showTokenSection && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 p-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-blue-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Key className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">API Token for WordPress</h3>
+                      <p className="text-sm text-gray-600">Use this token to connect your WordPress site</p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={copyToken}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center space-x-2"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4 text-green-600" />
+                        <span className="text-green-600">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copy Token</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between">
+                    <code className="text-sm text-gray-700 font-mono break-all">
+                      {getToken()}
+                    </code>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">WordPress Plugin Setup</p>
+                      <p className="text-sm text-gray-600">Install the PELIGENT plugin and enter this token in the settings</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">API Endpoint</p>
+                      <p className="text-sm text-gray-600">Your WordPress site will connect to: <code className="bg-gray-100 px-1 rounded">http://127.0.0.1:5008/api</code></p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Secure Connection</p>
+                      <p className="text-sm text-gray-600">All communication is encrypted and authenticated</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <ExternalLink className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm text-blue-600 font-medium">Need help setting up?</span>
+                    </div>
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                      View Documentation
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Chat Area */}
         <div className="flex-1 flex flex-col bg-white">

@@ -96,22 +96,27 @@ export default function StorePage() {
 
       const data = await response.json()
       
-      if (data.basicInfo) {
+
+
+      console.log('data', data)
+
+      if(data.success){
         setStoreForm({
-          siteUrl: data.basicInfo.url || '',
-          consumerKey: data.basicInfo.consumerKey || '',
-          consumerSecret: data.basicInfo.consumerSecret || '',
-          webhookUrl: data.basicInfo.webhookUrl || '',
-          siteName: data.basicInfo.siteName || ''
+          siteUrl: data.data[0].siteUrl || '',
+          consumerKey: data.data[0].consumerKey || '',
+          consumerSecret: data.data[0].consumerSecret || '',
+          webhookUrl: data.data[0].webhookUrl || '',
+          siteName: data.data[0].siteName || ''
         })
         setOriginalForm({
-          siteUrl: data.basicInfo.url || '',
-          consumerKey: data.basicInfo.consumerKey || '',
-          consumerSecret: data.basicInfo.consumerSecret || '',
-          webhookUrl: data.basicInfo.webhookUrl || '',
-          siteName: data.basicInfo.siteName || ''
+          siteUrl: data.data[0].siteUrl || '',
+          consumerKey: data.data[0].consumerKey || '',
+          consumerSecret: data.data[0].consumerSecret || '',
+          webhookUrl: data.data[0].webhookUrl || '',
+          siteName: data.data[0].siteName || ''
         })
       }
+      
     } catch (error) {
       console.error('Error fetching store data:', error)
       setError(`Failed to fetch store data: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -341,7 +346,9 @@ export default function StorePage() {
                   value={storeForm.siteUrl}
                   onChange={(e) => setStoreForm({...storeForm, siteUrl: e.target.value})}
                   placeholder="https://your-store.com"
-                  className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    !isEditMode ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
+                  }`}
                   disabled={!isEditMode || isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Your WooCommerce store URL</p>
@@ -357,7 +364,9 @@ export default function StorePage() {
                   value={storeForm.consumerKey}
                   onChange={(e) => setStoreForm({...storeForm, consumerKey: e.target.value})}
                   placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    !isEditMode ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
+                  }`}
                   disabled={!isEditMode || isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Key</p>
@@ -373,7 +382,9 @@ export default function StorePage() {
                   value={storeForm.consumerSecret}
                   onChange={(e) => setStoreForm({...storeForm, consumerSecret: e.target.value})}
                   placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    !isEditMode ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
+                  }`}
                   disabled={!isEditMode || isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Secret</p>
@@ -389,7 +400,9 @@ export default function StorePage() {
                   value={storeForm.webhookUrl}
                   onChange={(e) => setStoreForm({...storeForm, webhookUrl: e.target.value})}
                   placeholder="https://your-webhook-endpoint.com/webhook"
-                  className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    !isEditMode ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
+                  }`}
                   disabled={!isEditMode || isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Webhook endpoint for real-time updates</p>
@@ -405,7 +418,9 @@ export default function StorePage() {
                   value={storeForm.siteName}
                   onChange={(e) => setStoreForm({...storeForm, siteName: e.target.value})}
                   placeholder="My WooCommerce Store"
-                  className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    !isEditMode ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
+                  }`}
                   disabled={!isEditMode || isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Display name for your store</p>

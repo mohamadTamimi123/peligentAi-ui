@@ -8,7 +8,6 @@ on:
 
 env:
   NODE_VERSION: '18'
-  PNPM_VERSION: '8'
 
 jobs:
   # Build and Test Job
@@ -25,25 +24,20 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
         
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: ${{ env.PNPM_VERSION }}
-        
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: npm ci
       
     - name: Run linting
-      run: pnpm run lint
+      run: npm run lint
       
     - name: Run type checking
-      run: pnpm run type-check
+      run: npm run type-check
       
     - name: Build application
-      run: pnpm run build
+      run: npm run build
       
     - name: Run tests (if available)
-      run: pnpm test --if-present
+      run: npm test --if-present
       
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -68,16 +62,11 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
         
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: ${{ env.PNPM_VERSION }}
-        
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: npm ci
       
     - name: Build for production
-      run: pnpm run build
+      run: npm run build
       env:
         NODE_ENV: production
         
@@ -91,8 +80,8 @@ jobs:
         script: |
           cd /root/peligent
           git pull origin main
-          pnpm install --frozen-lockfile
-          pnpm run build
+          npm ci
+          npm run build
           pm2 restart all
           echo "Deployment completed successfully"
           

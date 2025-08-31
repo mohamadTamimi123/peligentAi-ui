@@ -1,17 +1,14 @@
 # Multi-stage build for production
 FROM node:18-alpine AS base
 
-# Install pnpm
-RUN npm install -g pnpm
-
 # Set working directory
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -23,9 +20,6 @@ RUN pnpm run build
 # Production stage
 FROM node:18-alpine AS production
 
-# Install pnpm
-RUN npm install -g pnpm
-
 # Create app user
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
@@ -34,10 +28,10 @@ RUN adduser -S nextjs -u 1001
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json package-lock.json ./
 
 # Install only production dependencies
-RUN pnpm install --frozen-lockfile --prod
+RUN npm ci --only=production
 
 # Copy built application
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
@@ -54,4 +48,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start the application
-CMD ["pnpm", "start"]
+CMD ["npm", "start"]

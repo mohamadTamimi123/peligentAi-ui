@@ -68,11 +68,11 @@ deploy_pm2() {
     
     # Install dependencies
     log "Installing dependencies..."
-    pnpm install --frozen-lockfile || error "Failed to install dependencies"
+    npm ci || error "Failed to install dependencies"
     
     # Build application
     log "Building application..."
-    pnpm run build || error "Build failed"
+    npm run build || error "Build failed"
     
     # Restart PM2 processes
     log "Restarting PM2 processes..."

@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'peligent-app',
-      script: 'pnpm',
+      script: 'npm',
       args: 'start',
       cwd: '/root/peligent',
       instances: 'max', // Use all available CPU cores
@@ -60,7 +60,7 @@ module.exports = {
       repo: 'git@github.com:yourusername/peligent.git',
       path: '/root/peligent',
       'pre-deploy-local': '',
-      'post-deploy': 'pnpm install --frozen-lockfile && pnpm run build && pm2 reload ecosystem.config.js --env production',
+      'post-deploy': 'npm ci && npm run build && pm2 reload ecosystem.config.js --env production',
       'pre-setup': ''
     }
   }

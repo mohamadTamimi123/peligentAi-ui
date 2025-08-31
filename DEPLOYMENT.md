@@ -4,7 +4,7 @@ This document provides comprehensive instructions for deploying the Peligent app
 
 ## Prerequisites
 
-- Node.js 18+ and pnpm 8+
+- Node.js 18+ and npm
 - Git
 - PM2 (for PM2 deployment)
 - Docker and Docker Compose (for Docker deployment) - Optional
@@ -49,12 +49,12 @@ NEXT_PUBLIC_API_URL=https://yourdomain.com/api
 
 4. **Install dependencies:**
    ```bash
-   pnpm install --frozen-lockfile
+   npm ci
    ```
 
 5. **Build the application:**
    ```bash
-   pnpm run build
+   npm run build
    ```
 
 6. **Start with PM2:**
@@ -103,6 +103,8 @@ The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml
 - `SERVER_USERNAME`: SSH username (usually root)
 - `SERVER_SSH_KEY`: Private SSH key for server access
 - `SERVER_PORT`: SSH port (usually 22)
+
+**Note:** The workflow now uses `npm ci` instead of `pnpm install --frozen-lockfile` for faster, more reliable installations.
 
 ### Manual Deployment Script
 

@@ -1,44 +1,35 @@
 'use client'
-
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { 
-  Store,
-  Globe,
-  Package,
-  Users,
-  DollarSign,
-  Settings,
-  Edit,
-  Save,
-  X,
-  Plus,
-  Trash2,
-  ExternalLink,
-  Calendar,
-  TrendingUp,
-  ShoppingCart,
-  CreditCard,
-  Shield,
-  Zap,
-  BarChart3,
-  RefreshCw,
-  AlertCircle,
-  Wifi,
-  HelpCircle,
-  ArrowLeft
+  Store, 
+  Save, 
+  Edit, 
+  Wifi, 
+  HelpCircle, 
+  ArrowLeft,
+  Loader2
 } from 'lucide-react'
 
+interface ActivityItem {
+  type: string
+  message: string
+  time: string
+  amount: number
+}
+
 export default function StorePage() {
-  const router = useRouter()
+  // User data state
   interface UserData { firstName?: string }
   const [userData, setUserData] = useState<UserData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+
+  // Loading and feedback states
+  const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   // Store form state
   const [storeForm, setStoreForm] = useState({
@@ -52,71 +43,68 @@ export default function StorePage() {
   // Check if form is filled
   const isFormFilled = storeForm.siteUrl && storeForm.consumerKey && storeForm.consumerSecret
 
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [originalForm, setOriginalForm] = useState({
+    siteUrl: '',
+    consumerKey: '',
+    consumerSecret: '',
+    webhookUrl: '',
+    siteName: ''
+  })
+
   useEffect(() => {
-    // Check authentication
+    // Check for user authentication
     const user = localStorage.getItem('user')
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken')
-    
-    if (!user || !token) {
-      router.push('/login')
-      return
+    if (user) {
+      try {
+        const userData = JSON.parse(user)
+        setUserData(userData)
+      } catch (error) {
+        console.error('Error parsing user data:', error)
+      }
     }
 
-    try {
-      const userData = JSON.parse(user)
-      setUserData(userData)
-    } catch (error) {
-      console.error('Error parsing user data:', error)
-      router.push('/login')
-      return
-    }
-
-    // Load existing store data
+    // Fetch store data
     fetchStoreData()
-  }, [router])
+  }, [])
 
   const fetchStoreData = async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      
-      const user = localStorage.getItem('user')
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken')
-      
-      console.log('token', token)
-      console.log('user', user)
-      
-      if (!token) {
-        throw new Error('No authentication token found')
-      }
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken')
+    
+    if (!token) {
+      setError('No authentication token found')
+      return
+    }
 
+    setIsLoading(true)
+    setError(null)
+
+    try {
       const response = await fetch('http://127.0.0.1:5008/api/woocommerce/settings', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
         credentials: 'include'
       })
 
-      console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
-
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('API Error:', errorText)
-        // Don't throw error here, just show empty form
-        setIsLoading(false)
-        return
+        throw new Error(`Failed to fetch store data: ${response.status}`)
       }
 
       const data = await response.json()
-      console.log('API Response:', data)
       
-      // Update form with existing data
       if (data.basicInfo) {
         setStoreForm({
+          siteUrl: data.basicInfo.url || '',
+          consumerKey: data.basicInfo.consumerKey || '',
+          consumerSecret: data.basicInfo.consumerSecret || '',
+          webhookUrl: data.basicInfo.webhookUrl || '',
+          siteName: data.basicInfo.siteName || ''
+        })
+        setOriginalForm({
           siteUrl: data.basicInfo.url || '',
           consumerKey: data.basicInfo.consumerKey || '',
           consumerSecret: data.basicInfo.consumerSecret || '',
@@ -126,64 +114,9 @@ export default function StorePage() {
       }
     } catch (error) {
       console.error('Error fetching store data:', error)
-      // Don't show error, just show empty form
+      setError(`Failed to fetch store data: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const handleSave = async () => {
-    try {
-      setIsSaving(true)
-      setError(null)
-      setSuccess(null)
-      
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken')
-      
-      if (!token) {
-        throw new Error('No authentication token found')
-      }
-
-      console.log('Saving with token:', token)
-
-      const response = await fetch('http://127.0.0.1:5008/api/woocommerce/settings', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          basicInfo: {
-            url: storeForm.siteUrl,
-            consumerKey: storeForm.consumerKey,
-            consumerSecret: storeForm.consumerSecret,
-            webhookUrl: storeForm.webhookUrl,
-            siteName: storeForm.siteName
-          }
-        })
-      })
-
-      console.log('Save response status:', response.status)
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Save API Error:', errorText)
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const updatedData = await response.json()
-      console.log('Save API Response:', updatedData)
-      setSuccess('Store information saved successfully!')
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(null), 3000)
-    } catch (error) {
-      console.error('Error updating store data:', error)
-      setError('Failed to save store information. Please try again.')
-    } finally {
-      setIsSaving(false)
     }
   }
 
@@ -208,7 +141,7 @@ export default function StorePage() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          storeUrl: storeForm.siteUrl,
+          siteUrl: storeForm.siteUrl,
           consumerKey: storeForm.consumerKey,
           consumerSecret: storeForm.consumerSecret,
           webhookUrl: storeForm.webhookUrl,
@@ -234,21 +167,72 @@ export default function StorePage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
+  const handleEdit = () => {
+    setIsEditMode(true)
+  }
+
+  const handleSave = async () => {
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken')
+    if (!token) {
+      setMessage('Please login to save changes')
+      return
+    }
+
+    setIsSaving(true)
+    setMessage('')
+
+    try {
+      const response = await fetch('http://127.0.0.1:5008/api/woocommerce/settings', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          siteUrl: storeForm.siteUrl,
+          consumerKey: storeForm.consumerKey,
+          consumerSecret: storeForm.consumerSecret,
+          webhookUrl: storeForm.webhookUrl,
+          siteName: storeForm.siteName
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage('Store information saved successfully!')
+        setSuccess('Store information saved successfully!')
+        setIsEditMode(false)
+        setOriginalForm({...storeForm})
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          setSuccess(null)
+          setMessage('')
+        }, 3000)
+      } else {
+        setMessage(data.message || 'Failed to save store information.')
+      }
+    } catch (error) {
+      setMessage('Failed to save store information. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setStoreForm({...originalForm})
+    setIsEditMode(false)
+    setMessage('')
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
-            <span className="ml-3 text-gray-600">Loading store configuration...</span>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading store information...</p>
         </div>
       </div>
     )
@@ -257,77 +241,64 @@ export default function StorePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => router.back()}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">Store Information</h1>
-                <p className="text-sm text-gray-500">Configure your WooCommerce store</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={fetchStoreData}
-                className="border-gray-200 text-gray-700 hover:bg-gray-50"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
-            </div>
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.history.back()}
+            className="border-gray-200 text-gray-700 hover:bg-gray-50"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">Store Information</h1>
+            <p className="text-sm text-gray-500">Manage your WooCommerce store configuration</p>
           </div>
         </div>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-xl">
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <span className="text-sm text-red-700">{error}</span>
-            <button
-              onClick={() => setError(null)}
-              className="ml-auto text-xs text-red-600 hover:text-red-800 underline"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Success Message */}
-      {success && (
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-xl">
-            <Shield className="w-5 h-5 text-green-600" />
-            <span className="text-sm text-green-700">{success}</span>
-            <button
-              onClick={() => setSuccess(null)}
-              className="ml-auto text-xs text-green-600 hover:text-green-800 underline"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-1">
-            WooCommerce Store Configuration
-          </h2>
-          <p className="text-gray-500">Connect your WooCommerce store to enable AI-powered features</p>
+        {/* Form Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Store Configuration</h2>
+            <p className="text-sm text-gray-600 mt-1">Configure your WooCommerce store settings</p>
+          </div>
+          {!isEditMode ? (
+            <Button
+              onClick={handleEdit}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isLoading}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          ) : (
+            <div className="flex space-x-2">
+              <Button
+                onClick={handleSave}
+                className="bg-green-600 hover:bg-green-700 text-white"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4 mr-2" />
+                )}
+                Save
+              </Button>
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Form and Help Section */}
@@ -336,14 +307,34 @@ export default function StorePage() {
           <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl p-6">
             <div className="flex items-center space-x-2 mb-6">
               <Store className="w-5 h-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Store Connection</h3>
+              <h3 className="text-lg font-semibold text-gray-900">WooCommerce Settings</h3>
             </div>
 
-            <div className="space-y-6">
-              {/* Store URL */}
+            {/* Success/Error Messages */}
+            {success && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-green-800 text-sm">{success}</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800 text-sm">{error}</p>
+              </div>
+            )}
+
+            {message && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-800 text-sm">{message}</p>
+              </div>
+            )}
+
+            {/* Form Fields */}
+            <div className="space-y-4">
+              {/* Site URL */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Store URL *
+                  Site URL
                 </label>
                 <input
                   type="url"
@@ -351,15 +342,15 @@ export default function StorePage() {
                   onChange={(e) => setStoreForm({...storeForm, siteUrl: e.target.value})}
                   placeholder="https://your-store.com"
                   className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isSaving}
+                  disabled={!isEditMode || isSaving}
                 />
-                <p className="text-xs text-gray-500 mt-1">Enter your WooCommerce store URL (e.g., https://mysite.com)</p>
+                <p className="text-xs text-gray-500 mt-1">Your WooCommerce store URL</p>
               </div>
 
               {/* Consumer Key */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Consumer Key *
+                  Consumer Key
                 </label>
                 <input
                   type="text"
@@ -367,7 +358,7 @@ export default function StorePage() {
                   onChange={(e) => setStoreForm({...storeForm, consumerKey: e.target.value})}
                   placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                   className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isSaving}
+                  disabled={!isEditMode || isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Key</p>
               </div>
@@ -375,7 +366,7 @@ export default function StorePage() {
               {/* Consumer Secret */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Consumer Secret *
+                  Consumer Secret
                 </label>
                 <input
                   type="password"
@@ -383,7 +374,7 @@ export default function StorePage() {
                   onChange={(e) => setStoreForm({...storeForm, consumerSecret: e.target.value})}
                   placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                   className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isSaving}
+                  disabled={!isEditMode || isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Secret</p>
               </div>
@@ -399,7 +390,7 @@ export default function StorePage() {
                   onChange={(e) => setStoreForm({...storeForm, webhookUrl: e.target.value})}
                   placeholder="https://your-webhook-endpoint.com/webhook"
                   className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isSaving}
+                  disabled={!isEditMode || isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Webhook endpoint for real-time updates</p>
               </div>
@@ -415,57 +406,41 @@ export default function StorePage() {
                   onChange={(e) => setStoreForm({...storeForm, siteName: e.target.value})}
                   placeholder="My WooCommerce Store"
                   className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isSaving}
+                  disabled={!isEditMode || isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Display name for your store</p>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-between pt-6 border-t border-gray-200 mt-8">
-              <div className="text-sm text-gray-500">
-                * Required fields
+            {isEditMode && (
+              <div className="flex items-center justify-between pt-6 border-t border-gray-200 mt-8">
+                <div className="text-sm text-gray-500">
+                  * Required fields
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleTestConnection}
+                    disabled={!isFormFilled || isSaving}
+                    className="border-gray-200 text-gray-700 hover:bg-gray-50"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Testing...
+                      </>
+                    ) : (
+                      <>
+                        <Wifi className="w-4 h-4 mr-2" />
+                        Test Connection
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleTestConnection}
-                  disabled={!isFormFilled || isSaving}
-                  className="border-gray-200 text-gray-700 hover:bg-gray-50"
-                >
-                  {isSaving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-600 border-t-transparent mr-2"></div>
-                      Testing...
-                    </>
-                  ) : (
-                    <>
-                      <Wifi className="w-4 h-4 mr-2" />
-                      Test Connection
-                    </>
-                  )}
-                </Button>
-                <Button 
-                  size="sm" 
-                  onClick={handleSave}
-                  disabled={!isFormFilled || isSaving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {isSaving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Configuration
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Help Section */}

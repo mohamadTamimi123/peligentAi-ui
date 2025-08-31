@@ -44,12 +44,7 @@ export default function StorePage() {
   const [storeForm, setStoreForm] = useState({
     storeUrl: '',
     consumerKey: '',
-    consumerSecret: '',
-    storeName: '',
-    description: '',
-    currency: 'USD',
-    timezone: 'UTC-5',
-    language: 'English'
+    consumerSecret: ''
   })
 
   // Check if form is filled
@@ -123,11 +118,6 @@ export default function StorePage() {
           storeUrl: data.basicInfo.url || '',
           consumerKey: data.basicInfo.consumerKey || '',
           consumerSecret: data.basicInfo.consumerSecret || '',
-          storeName: data.basicInfo.name || '',
-          description: data.basicInfo.description || '',
-          currency: data.basicInfo.currency || 'USD',
-          timezone: data.basicInfo.timezone || 'UTC-5',
-          language: data.basicInfo.language || 'English'
         })
       }
     } catch (error) {
@@ -165,11 +155,6 @@ export default function StorePage() {
             url: storeForm.storeUrl,
             consumerKey: storeForm.consumerKey,
             consumerSecret: storeForm.consumerSecret,
-            name: storeForm.storeName,
-            description: storeForm.description,
-            currency: storeForm.currency,
-            timezone: storeForm.timezone,
-            language: storeForm.language
           }
         })
       })
@@ -393,74 +378,6 @@ export default function StorePage() {
                   disabled={isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Secret</p>
-              </div>
-
-              {/* Store Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Store Name
-                </label>
-                <input
-                  type="text"
-                  value={storeForm.storeName}
-                  onChange={(e) => setStoreForm({...storeForm, storeName: e.target.value})}
-                  placeholder="My Online Store"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isSaving}
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={storeForm.description}
-                  onChange={(e) => setStoreForm({...storeForm, description: e.target.value})}
-                  placeholder="Brief description of your store..."
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isSaving}
-                />
-              </div>
-
-              {/* Currency and Language */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Currency
-                  </label>
-                  <select
-                    value={storeForm.currency}
-                    onChange={(e) => setStoreForm({...storeForm, currency: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    disabled={isSaving}
-                  >
-                    <option value="USD">USD - US Dollar</option>
-                    <option value="EUR">EUR - Euro</option>
-                    <option value="GBP">GBP - British Pound</option>
-                    <option value="CAD">CAD - Canadian Dollar</option>
-                    <option value="AUD">AUD - Australian Dollar</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Language
-                  </label>
-                  <select
-                    value={storeForm.language}
-                    onChange={(e) => setStoreForm({...storeForm, language: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    disabled={isSaving}
-                  >
-                    <option value="English">English</option>
-                    <option value="Spanish">Spanish</option>
-                    <option value="French">French</option>
-                    <option value="German">German</option>
-                    <option value="Italian">Italian</option>
-                  </select>
-                </div>
               </div>
             </div>
 

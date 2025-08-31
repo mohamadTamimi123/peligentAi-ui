@@ -42,13 +42,15 @@ export default function StorePage() {
 
   // Store form state
   const [storeForm, setStoreForm] = useState({
-    storeUrl: '',
+    siteUrl: '',
     consumerKey: '',
-    consumerSecret: ''
+    consumerSecret: '',
+    webhookUrl: '',
+    siteName: ''
   })
 
   // Check if form is filled
-  const isFormFilled = storeForm.storeUrl && storeForm.consumerKey && storeForm.consumerSecret
+  const isFormFilled = storeForm.siteUrl && storeForm.consumerKey && storeForm.consumerSecret
 
   useEffect(() => {
     // Check authentication
@@ -115,9 +117,11 @@ export default function StorePage() {
       // Update form with existing data
       if (data.basicInfo) {
         setStoreForm({
-          storeUrl: data.basicInfo.url || '',
+          siteUrl: data.basicInfo.url || '',
           consumerKey: data.basicInfo.consumerKey || '',
           consumerSecret: data.basicInfo.consumerSecret || '',
+          webhookUrl: data.basicInfo.webhookUrl || '',
+          siteName: data.basicInfo.siteName || ''
         })
       }
     } catch (error) {
@@ -143,7 +147,7 @@ export default function StorePage() {
       console.log('Saving with token:', token)
 
       const response = await fetch('http://127.0.0.1:5008/api/woocommerce/settings', {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -152,9 +156,11 @@ export default function StorePage() {
         credentials: 'include',
         body: JSON.stringify({
           basicInfo: {
-            url: storeForm.storeUrl,
+            url: storeForm.siteUrl,
             consumerKey: storeForm.consumerKey,
             consumerSecret: storeForm.consumerSecret,
+            webhookUrl: storeForm.webhookUrl,
+            siteName: storeForm.siteName
           }
         })
       })
@@ -202,9 +208,11 @@ export default function StorePage() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          storeUrl: storeForm.storeUrl,
+          storeUrl: storeForm.siteUrl,
           consumerKey: storeForm.consumerKey,
-          consumerSecret: storeForm.consumerSecret
+          consumerSecret: storeForm.consumerSecret,
+          webhookUrl: storeForm.webhookUrl,
+          siteName: storeForm.siteName
         })
       })
 
@@ -339,10 +347,10 @@ export default function StorePage() {
                 </label>
                 <input
                   type="url"
-                  value={storeForm.storeUrl}
-                  onChange={(e) => setStoreForm({...storeForm, storeUrl: e.target.value})}
+                  value={storeForm.siteUrl}
+                  onChange={(e) => setStoreForm({...storeForm, siteUrl: e.target.value})}
                   placeholder="https://your-store.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Enter your WooCommerce store URL (e.g., https://mysite.com)</p>
@@ -358,7 +366,7 @@ export default function StorePage() {
                   value={storeForm.consumerKey}
                   onChange={(e) => setStoreForm({...storeForm, consumerKey: e.target.value})}
                   placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Key</p>
@@ -374,10 +382,42 @@ export default function StorePage() {
                   value={storeForm.consumerSecret}
                   onChange={(e) => setStoreForm({...storeForm, consumerSecret: e.target.value})}
                   placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isSaving}
                 />
                 <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Secret</p>
+              </div>
+
+              {/* Webhook URL */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Webhook URL
+                </label>
+                <input
+                  type="url"
+                  value={storeForm.webhookUrl}
+                  onChange={(e) => setStoreForm({...storeForm, webhookUrl: e.target.value})}
+                  placeholder="https://your-webhook-endpoint.com/webhook"
+                  className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isSaving}
+                />
+                <p className="text-xs text-gray-500 mt-1">Webhook endpoint for real-time updates</p>
+              </div>
+
+              {/* Site Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Site Name
+                </label>
+                <input
+                  type="text"
+                  value={storeForm.siteName}
+                  onChange={(e) => setStoreForm({...storeForm, siteName: e.target.value})}
+                  placeholder="My WooCommerce Store"
+                  className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isSaving}
+                />
+                <p className="text-xs text-gray-500 mt-1">Display name for your store</p>
               </div>
             </div>
 

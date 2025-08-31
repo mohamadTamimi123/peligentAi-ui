@@ -140,8 +140,45 @@ export default function StorePage() {
 
       const data = await response.json()
       console.log('API Response:', data)
-      setStoreData(data)
-      setEditForm(data.basicInfo)
+      
+      // Ensure all required properties exist with fallback values
+      const safeData = {
+        basicInfo: data.basicInfo || {
+          name: '',
+          url: '',
+          description: '',
+          currency: 'USD',
+          timezone: 'UTC-5',
+          language: 'English'
+        },
+        statistics: data.statistics || {
+          totalProducts: 0,
+          totalOrders: 0,
+          totalCustomers: 0,
+          totalRevenue: 0,
+          averageOrderValue: 0,
+          conversionRate: 0
+        },
+        settings: data.settings || {
+          storeStatus: 'active',
+          maintenanceMode: false,
+          autoBackup: true,
+          sslEnabled: true,
+          seoOptimized: true
+        },
+        recentActivity: data.recentActivity || [],
+        quickStats: data.quickStats || {
+          todayOrders: 0,
+          todayRevenue: 0,
+          thisWeekOrders: 0,
+          thisWeekRevenue: 0,
+          thisMonthOrders: 0,
+          thisMonthRevenue: 0
+        }
+      }
+      
+      setStoreData(safeData)
+      setEditForm(safeData.basicInfo)
     } catch (error) {
       console.error('Error fetching store data:', error)
       setError('Failed to load store information. Please try again.')
@@ -378,7 +415,7 @@ export default function StorePage() {
               <span className="text-xs font-medium text-gray-600">Today</span>
               <Calendar className="w-3 h-3 text-blue-600" />
             </div>
-            <div className="text-lg font-semibold text-gray-900">{storeData.quickStats.todayOrders}</div>
+            <div className="text-lg font-semibold text-gray-900">{storeData.quickStats?.todayOrders || 0}</div>
             <p className="text-xs text-gray-500">Orders</p>
           </div>
 
@@ -387,7 +424,7 @@ export default function StorePage() {
               <span className="text-xs font-medium text-gray-600">Today</span>
               <DollarSign className="w-3 h-3 text-green-600" />
             </div>
-            <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.quickStats.todayRevenue)}</div>
+            <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.quickStats?.todayRevenue || 0)}</div>
             <p className="text-xs text-gray-500">Revenue</p>
           </div>
 
@@ -396,7 +433,7 @@ export default function StorePage() {
               <span className="text-xs font-medium text-gray-600">This Week</span>
               <TrendingUp className="w-3 h-3 text-purple-600" />
             </div>
-            <div className="text-lg font-semibold text-gray-900">{storeData.quickStats.thisWeekOrders}</div>
+            <div className="text-lg font-semibold text-gray-900">{storeData.quickStats?.thisWeekOrders || 0}</div>
             <p className="text-xs text-gray-500">Orders</p>
           </div>
 
@@ -405,7 +442,7 @@ export default function StorePage() {
               <span className="text-xs font-medium text-gray-600">This Week</span>
               <DollarSign className="w-3 h-3 text-orange-600" />
             </div>
-            <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.quickStats.thisWeekRevenue)}</div>
+            <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.quickStats?.thisWeekRevenue || 0)}</div>
             <p className="text-xs text-gray-500">Revenue</p>
           </div>
 
@@ -414,7 +451,7 @@ export default function StorePage() {
               <span className="text-xs font-medium text-gray-600">This Month</span>
               <ShoppingCart className="w-3 h-3 text-indigo-600" />
             </div>
-            <div className="text-lg font-semibold text-gray-900">{storeData.quickStats.thisMonthOrders}</div>
+            <div className="text-lg font-semibold text-gray-900">{storeData.quickStats?.thisMonthOrders || 0}</div>
             <p className="text-xs text-gray-500">Orders</p>
           </div>
 
@@ -423,7 +460,7 @@ export default function StorePage() {
               <span className="text-xs font-medium text-gray-600">This Month</span>
               <CreditCard className="w-3 h-3 text-red-600" />
             </div>
-            <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.quickStats.thisMonthRevenue)}</div>
+            <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.quickStats?.thisMonthRevenue || 0)}</div>
             <p className="text-xs text-gray-500">Revenue</p>
           </div>
         </div>
@@ -441,27 +478,27 @@ export default function StorePage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm text-gray-600">Store Name</span>
-                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo.name}</span>
+                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo?.name || 'Not set'}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm text-gray-600">Store URL</span>
-                  <span className="text-sm font-medium text-blue-600">{storeData.basicInfo.url}</span>
+                  <span className="text-sm font-medium text-blue-600">{storeData.basicInfo?.url || 'Not set'}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm text-gray-600">Description</span>
-                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo.description}</span>
+                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo?.description || 'Not set'}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm text-gray-600">Currency</span>
-                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo.currency}</span>
+                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo?.currency || 'USD'}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm text-gray-600">Timezone</span>
-                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo.timezone}</span>
+                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo?.timezone || 'UTC-5'}</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-sm text-gray-600">Language</span>
-                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo.language}</span>
+                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo?.language || 'English'}</span>
                 </div>
               </div>
             ) : (
@@ -538,51 +575,51 @@ export default function StorePage() {
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Store Status</span>
                 <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  storeData.settings.storeStatus === 'active' 
+                  storeData.settings?.storeStatus === 'active' 
                     ? 'bg-green-100 text-green-700' 
                     : 'bg-red-100 text-red-700'
                 }`}>
-                  {storeData.settings.storeStatus}
+                  {storeData.settings?.storeStatus || 'unknown'}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Maintenance Mode</span>
                 <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  storeData.settings.maintenanceMode 
+                  storeData.settings?.maintenanceMode 
                     ? 'bg-yellow-100 text-yellow-700' 
                     : 'bg-green-100 text-green-700'
                 }`}>
-                  {storeData.settings.maintenanceMode ? 'Enabled' : 'Disabled'}
+                  {storeData.settings?.maintenanceMode ? 'Enabled' : 'Disabled'}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Auto Backup</span>
                 <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  storeData.settings.autoBackup 
+                  storeData.settings?.autoBackup 
                     ? 'bg-green-100 text-green-700' 
                     : 'bg-red-100 text-red-700'
                 }`}>
-                  {storeData.settings.autoBackup ? 'Enabled' : 'Disabled'}
+                  {storeData.settings?.autoBackup ? 'Enabled' : 'Disabled'}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">SSL Certificate</span>
                 <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  storeData.settings.sslEnabled 
+                  storeData.settings?.sslEnabled 
                     ? 'bg-green-100 text-green-700' 
                     : 'bg-red-100 text-red-700'
                 }`}>
-                  {storeData.settings.sslEnabled ? 'Active' : 'Inactive'}
+                  {storeData.settings?.sslEnabled ? 'Active' : 'Inactive'}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className="text-sm text-gray-600">SEO Optimization</span>
                 <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  storeData.settings.seoOptimized 
+                  storeData.settings?.seoOptimized 
                     ? 'bg-green-100 text-green-700' 
                     : 'bg-red-100 text-red-700'
                 }`}>
-                  {storeData.settings.seoOptimized ? 'Optimized' : 'Not Optimized'}
+                  {storeData.settings?.seoOptimized ? 'Optimized' : 'Not Optimized'}
                 </span>
               </div>
             </div>
@@ -597,29 +634,29 @@ export default function StorePage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">{storeData.statistics.totalProducts}</div>
+              <div className="text-2xl font-semibold text-gray-900">{storeData.statistics?.totalProducts || 0}</div>
               <p className="text-sm text-gray-600">Total Products</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">{storeData.statistics.totalOrders}</div>
+              <div className="text-2xl font-semibold text-gray-900">{storeData.statistics?.totalOrders || 0}</div>
               <p className="text-sm text-gray-600">Total Orders</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">{storeData.statistics.totalCustomers}</div>
+              <div className="text-2xl font-semibold text-gray-900">{storeData.statistics?.totalCustomers || 0}</div>
               <p className="text-sm text-gray-600">Total Customers</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">{formatCurrency(storeData.statistics.totalRevenue)}</div>
+              <div className="text-2xl font-semibold text-gray-900">{formatCurrency(storeData.statistics?.totalRevenue || 0)}</div>
               <p className="text-sm text-gray-600">Total Revenue</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t border-gray-100">
             <div className="text-center">
-              <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.statistics.averageOrderValue)}</div>
+              <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.statistics?.averageOrderValue || 0)}</div>
               <p className="text-sm text-gray-600">Average Order Value</p>
             </div>
             <div className="text-center">
-              <div className="text-lg font-semibold text-gray-900">{storeData.statistics.conversionRate}%</div>
+              <div className="text-lg font-semibold text-gray-900">{storeData.statistics?.conversionRate || 0}%</div>
               <p className="text-sm text-gray-600">Conversion Rate</p>
             </div>
             <div className="text-center">
@@ -636,7 +673,7 @@ export default function StorePage() {
             <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
           </div>
           <div className="space-y-3">
-            {storeData.recentActivity.length > 0 ? (
+            {storeData.recentActivity && storeData.recentActivity.length > 0 ? (
               storeData.recentActivity.map((activity, index) => (
                 <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${

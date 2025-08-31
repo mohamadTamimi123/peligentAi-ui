@@ -336,7 +336,7 @@ export default function StorePage() {
 
             {/* Form Fields */}
             <div className="space-y-4">
-              {/* Site URL */}
+              {/* Site URL - Always visible */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Site URL
@@ -354,77 +354,104 @@ export default function StorePage() {
                 <p className="text-xs text-gray-500 mt-1">Your WooCommerce store URL</p>
               </div>
 
-              {/* Consumer Key */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Consumer Key
-                </label>
-                <input
-                  type="text"
-                  value={storeForm.consumerKey}
-                  onChange={(e) => setStoreForm({...storeForm, consumerKey: e.target.value})}
-                  placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  className={`w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    !isEditMode ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
-                  }`}
-                  disabled={!isEditMode || isSaving}
-                />
-                <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Key</p>
+              {/* API Token Display */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-blue-900 mb-1">Your API Token</h4>
+                    <p className="text-xs text-blue-700 mb-2">Use this token to integrate with your WordPress site</p>
+                    <div className="bg-white border border-blue-300 rounded px-3 py-2">
+                      <code className="text-sm text-gray-800 font-mono break-all">
+                        {localStorage.getItem('token') || localStorage.getItem('authToken') || 'No token available'}
+                      </code>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      const token = localStorage.getItem('token') || localStorage.getItem('authToken')
+                      if (token) {
+                        navigator.clipboard.writeText(token)
+                        setMessage('Token copied to clipboard!')
+                        setTimeout(() => setMessage(''), 3000)
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                  >
+                    Copy Token
+                  </Button>
+                </div>
               </div>
 
-              {/* Consumer Secret */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Consumer Secret
-                </label>
-                <input
-                  type="password"
-                  value={storeForm.consumerSecret}
-                  onChange={(e) => setStoreForm({...storeForm, consumerSecret: e.target.value})}
-                  placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  className={`w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    !isEditMode ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
-                  }`}
-                  disabled={!isEditMode || isSaving}
-                />
-                <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Secret</p>
-              </div>
+              {/* Other fields - Only visible in edit mode */}
+              {isEditMode && (
+                <>
+                  {/* Consumer Key */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Consumer Key
+                    </label>
+                    <input
+                      type="text"
+                      value={storeForm.consumerKey}
+                      onChange={(e) => setStoreForm({...storeForm, consumerKey: e.target.value})}
+                      placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      disabled={isSaving}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Key</p>
+                  </div>
 
-              {/* Webhook URL */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Webhook URL
-                </label>
-                <input
-                  type="url"
-                  value={storeForm.webhookUrl}
-                  onChange={(e) => setStoreForm({...storeForm, webhookUrl: e.target.value})}
-                  placeholder="https://your-webhook-endpoint.com/webhook"
-                  className={`w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    !isEditMode ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
-                  }`}
-                  disabled={!isEditMode || isSaving}
-                />
-                <p className="text-xs text-gray-500 mt-1">Webhook endpoint for real-time updates</p>
-              </div>
+                  {/* Consumer Secret */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Consumer Secret
+                    </label>
+                    <input
+                      type="password"
+                      value={storeForm.consumerSecret}
+                      onChange={(e) => setStoreForm({...storeForm, consumerSecret: e.target.value})}
+                      placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      disabled={isSaving}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Secret</p>
+                  </div>
 
-              {/* Site Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Site Name
-                </label>
-                <input
-                  type="text"
-                  value={storeForm.siteName}
-                  onChange={(e) => setStoreForm({...storeForm, siteName: e.target.value})}
-                  placeholder="My WooCommerce Store"
-                  className={`w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    !isEditMode ? 'bg-gray-50 cursor-not-allowed' : 'bg-white'
-                  }`}
-                  disabled={!isEditMode || isSaving}
-                />
-                <p className="text-xs text-gray-500 mt-1">Display name for your store</p>
-              </div>
+                  {/* Webhook URL */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Webhook URL
+                    </label>
+                    <input
+                      type="url"
+                      value={storeForm.webhookUrl}
+                      onChange={(e) => setStoreForm({...storeForm, webhookUrl: e.target.value})}
+                      placeholder="https://your-webhook-endpoint.com/webhook"
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      disabled={isSaving}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Webhook endpoint for real-time updates</p>
+                  </div>
+
+                  {/* Site Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Site Name
+                    </label>
+                    <input
+                      type="text"
+                      value={storeForm.siteName}
+                      onChange={(e) => setStoreForm({...storeForm, siteName: e.target.value})}
+                      placeholder="My WooCommerce Store"
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      disabled={isSaving}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Display name for your store</p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Action Buttons */}

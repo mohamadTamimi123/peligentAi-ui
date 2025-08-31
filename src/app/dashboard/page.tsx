@@ -95,8 +95,16 @@ export default function DashboardPage() {
     setIsStreaming(true)
     setStreamingResponse('')
 
+    // Add user message to chat
+    addMessage({
+      id: Date.now(),
+      text: messageText,
+      sender: 'user',
+      timestamp: new Date()
+    })
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
+      const response = await fetch('http://127.0.0.1:5008/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +113,11 @@ export default function DashboardPage() {
         },
         mode: 'cors',
         body: JSON.stringify({
-          message: messageText
+          message: messageText,
+          chatHistory: chatState.messages.map(m => ({
+            role: m.sender === 'user' ? 'user' : 'assistant',
+            content: m.text
+          }))
         })
       })
 
@@ -124,16 +136,58 @@ export default function DashboardPage() {
           const errJson = await response.json()
           if (errJson?.message) errorMsg = errJson.message
         } catch {}
-        alert(errorMsg)
+        
+        addMessage({
+          id: Date.now() + 1,
+          text: errorMsg,
+          sender: 'ai',
+          timestamp: new Date(),
+          isError: true
+        })
+        
         setIsStreaming(false)
         setStreamingResponse('')
         return
       }
 
+      // Handle streaming response
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('No response body')
+      }
+
+      let fullResponse = ''
+      const decoder = new TextDecoder()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        
+        if (done) break
+        
+        const chunk = decoder.decode(value)
+        fullResponse += chunk
+        setStreamingResponse(fullResponse)
+      }
+
+      // Add AI response to chat
+      addMessage({
+        id: Date.now() + 1,
+        text: fullResponse,
+        sender: 'ai',
+        timestamp: new Date()
+      })
+
     } catch (error: unknown) {
       console.error('Chat error:', error)
       const msg = error instanceof Error ? error.message : 'Chat error. Please try again.'
-      alert(msg)
+      
+      addMessage({
+        id: Date.now() + 1,
+        text: msg,
+        sender: 'ai',
+        timestamp: new Date(),
+        isError: true
+      })
     } finally {
       setIsStreaming(false)
       setStreamingResponse('')
@@ -273,7 +327,7 @@ export default function DashboardPage() {
                     onKeyPress={handleKeyPress}
                     placeholder="Ask me anything about your business..."
                     className="w-full px-6 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 text-gray-900 placeholder-gray-500 bg-white shadow-sm transition-all duration-200"
-                    disabled={chatState.isLoading}
+                    disabled={chatState.isLoading || isStreaming}
                   />
                   <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
                     <Lightbulb className="w-5 h-5 text-gray-400" />
@@ -281,7 +335,7 @@ export default function DashboardPage() {
                 </div>
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || chatState.isLoading}
+                  disabled={!inputMessage.trim() || chatState.isLoading || isStreaming}
                   className="px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   <Send className="w-5 h-5 mr-2" />

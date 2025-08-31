@@ -35,10 +35,10 @@ export function StreamingChat({ onMessageComplete, onError, className = '' }: St
     abortControllerRef.current = new AbortController()
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5008/api'
+      const baseUrl = 'http://127.0.0.1:5008/api'
       const token = localStorage.getItem('authToken') || localStorage.getItem('token')
       
-      const response = await fetch(`${baseUrl}/chat/stream`, {
+      const response = await fetch(`${baseUrl}/chat`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

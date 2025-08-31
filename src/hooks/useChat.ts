@@ -147,7 +147,7 @@ class ChatAPI {
   private token: string | null
 
   constructor() {
-    this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5008/api'
+    this.baseURL = 'http://127.0.0.1:5008/api'
     this.token = localStorage.getItem('authToken') || localStorage.getItem('token')
   }
 

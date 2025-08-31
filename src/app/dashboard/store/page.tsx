@@ -103,7 +103,7 @@ export default function StorePage() {
       setError(null)
       
       const token = localStorage.getItem('authToken') || localStorage.getItem('token')
-      const response = await fetch('http://127.0.0.1:5008/api/store', {
+      const response = await fetch('http://127.0.0.1:5008/api/woocommerce/setting', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -181,7 +181,7 @@ export default function StorePage() {
       setError(null)
       
       const token = localStorage.getItem('authToken') || localStorage.getItem('token')
-      const response = await fetch('http://127.0.0.1:5008/api/store', {
+      const response = await fetch('http://127.0.0.1:5008/api/woocommerce/setting', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

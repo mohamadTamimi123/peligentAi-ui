@@ -120,131 +120,102 @@ export default function DashboardPage() {
 
   if (!userData || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading your dashboard...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-500 text-sm font-medium">Loading dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
-      {/* Top Bar */}
-      <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-          <div className="flex items-center space-x-2 px-3 py-1 bg-blue-50 rounded-full">
-            <Zap className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-700">AI Powered</span>
+    <div className="min-h-screen bg-white">
+      {/* Minimal Header */}
+      <div className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+              <div className="px-2 py-1 bg-blue-50 rounded-md">
+                <span className="text-xs font-medium text-blue-600">AI Powered</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowTokenSection(!showTokenSection)}
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+              >
+                <Key className="w-4 h-4 mr-2" />
+                API Token
+              </Button>
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                <RefreshCw className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                <Settings className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-        
-        <div className="flex items-center space-x-3">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowTokenSection(!showTokenSection)}
-            className="rounded-xl"
-          >
-            <Key className="w-4 h-4 mr-2" />
-            API Token
-          </Button>
-          <Button variant="outline" size="sm" className="rounded-xl">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-          <Button variant="outline" size="sm" className="rounded-xl">
-            <Settings className="w-4 h-4" />
-          </Button>
         </div>
       </div>
 
       {/* Token Section */}
       {showTokenSection && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-blue-200">
+        <div className="bg-gray-50 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Key className="w-5 h-5 text-blue-600" />
+                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <Key className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">API Token for WordPress</h3>
-                    <p className="text-sm text-gray-600">Use this token to connect your WordPress site</p>
+                    <h3 className="text-base font-semibold text-gray-900">API Token</h3>
+                    <p className="text-sm text-gray-500">Connect your WordPress site</p>
                   </div>
                 </div>
                 <Button
                   onClick={copyToken}
                   variant="outline"
                   size="sm"
-                  className="flex items-center space-x-2"
+                  className="border-gray-200 text-gray-700 hover:bg-gray-50"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-4 h-4 text-green-600" />
-                      <span className="text-green-600">Copied!</span>
+                      <Check className="w-4 h-4 mr-2 text-green-600" />
+                      <span className="text-green-600">Copied</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-4 h-4" />
-                      <span>Copy Token</span>
+                      <Copy className="w-4 h-4 mr-2" />
+                      <span>Copy</span>
                     </>
                   )}
                 </Button>
               </div>
               
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <code className="text-sm text-gray-700 font-mono break-all">
-                    {getToken()}
-                  </code>
-                </div>
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <code className="text-sm text-gray-700 font-mono break-all">
+                  {getToken()}
+                </code>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">WordPress Plugin Setup</p>
-                    <p className="text-sm text-gray-600">Install the PELIGENT plugin and enter this token in the settings</p>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-600">WordPress Plugin Setup</span>
                 </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">API Endpoint</p>
-                    <p className="text-sm text-gray-600">Your WordPress site will connect to: <code className="bg-gray-100 px-1 rounded">http://127.0.0.1:5008/api</code></p>
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-gray-600">API: http://127.0.0.1:5008/api</span>
                 </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Secure Connection</p>
-                    <p className="text-sm text-gray-600">All communication is encrypted and authenticated</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <ExternalLink className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm text-blue-600 font-medium">Need help setting up?</span>
-                  </div>
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                    View Documentation
-                  </Button>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-gray-600">Secure Connection</span>
                 </div>
               </div>
             </div>
@@ -252,170 +223,143 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Main Dashboard Content */}
-      <div className="flex-1 p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {userData.firstName}!
-            </h1>
-            <p className="text-gray-600">Here's what's happening with your WooCommerce store today.</p>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-1">
+            Welcome back, {userData.firstName}
+          </h2>
+          <p className="text-gray-500">Here's your store overview</p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Token Credits</span>
+              <Zap className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="text-2xl font-semibold text-gray-900">{dashboardData.tokenCredits.toLocaleString()}</div>
+            <p className="text-xs text-gray-500 mt-1">Available</p>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Token Credits</CardTitle>
-                <Zap className="h-4 w-4 text-blue-600" />
-              </CardHeader>
-              <div className="px-6 pb-4">
-                <div className="text-2xl font-bold text-blue-600">{dashboardData.tokenCredits.toLocaleString()}</div>
-                <p className="text-xs text-gray-600">Available for AI operations</p>
-              </div>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-                <Package className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <div className="px-6 pb-4">
-                <div className="text-2xl font-bold text-green-600">{dashboardData.stats.totalProducts}</div>
-                <p className="text-xs text-gray-600">In your store</p>
-              </div>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-                <ShoppingBag className="h-4 w-4 text-purple-600" />
-              </CardHeader>
-              <div className="px-6 pb-4">
-                <div className="text-2xl font-bold text-purple-600">{dashboardData.stats.totalOrders}</div>
-                <p className="text-xs text-gray-600">Processed</p>
-              </div>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                <DollarSign className="h-4 w-4 text-orange-600" />
-              </CardHeader>
-              <div className="px-6 pb-4">
-                <div className="text-2xl font-bold text-orange-600">{formatCurrency(dashboardData.stats.totalRevenue)}</div>
-                <p className="text-xs text-gray-600">Generated</p>
-              </div>
-            </Card>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Products</span>
+              <Package className="w-4 h-4 text-green-600" />
+            </div>
+            <div className="text-2xl font-semibold text-gray-900">{dashboardData.stats.totalProducts}</div>
+            <p className="text-xs text-gray-500 mt-1">In store</p>
           </div>
 
-          {/* Store Information */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <Card className="hover:shadow-lg transition-shadow duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Store className="w-5 h-5 text-blue-600" />
-                  <span>Store Information</span>
-                </CardTitle>
-                <CardDescription>Your WooCommerce store details</CardDescription>
-              </CardHeader>
-              <div className="px-6 pb-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Store Name:</span>
-                    <span className="text-sm font-medium text-gray-900">{dashboardData.storeInfo.name}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Store URL:</span>
-                    <span className="text-sm font-medium text-blue-600">{dashboardData.storeInfo.url}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Products:</span>
-                    <span className="text-sm font-medium text-gray-900">{dashboardData.storeInfo.products}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Customers:</span>
-                    <span className="text-sm font-medium text-gray-900">{dashboardData.storeInfo.customers}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Total Revenue:</span>
-                    <span className="text-sm font-medium text-gray-900">{formatCurrency(dashboardData.storeInfo.revenue)}</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <BarChart3 className="w-5 h-5 text-green-600" />
-                  <span>AI Performance</span>
-                </CardTitle>
-                <CardDescription>AI optimization metrics</CardDescription>
-              </CardHeader>
-              <div className="px-6 pb-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">AI Optimizations:</span>
-                    <span className="text-sm font-medium text-gray-900">{dashboardData.stats.aiOptimizations}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">SEO Score:</span>
-                    <span className="text-sm font-medium text-gray-900">{dashboardData.stats.seoScore}%</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Products Optimized:</span>
-                    <span className="text-sm font-medium text-gray-900">45/156</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Last Optimization:</span>
-                    <span className="text-sm font-medium text-gray-900">2 hours ago</span>
-                  </div>
-                  <div className="pt-2">
-                    <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                      <Zap className="w-4 h-4 mr-2" />
-                      Run AI Optimization
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </Card>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Orders</span>
+              <ShoppingBag className="w-4 h-4 text-purple-600" />
+            </div>
+            <div className="text-2xl font-semibold text-gray-900">{dashboardData.stats.totalOrders}</div>
+            <p className="text-xs text-gray-500 mt-1">Processed</p>
           </div>
 
-          {/* Recent Activity */}
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Activity className="w-5 h-5 text-purple-600" />
-                <span>Recent Activity</span>
-              </CardTitle>
-              <CardDescription>Latest updates from your store</CardDescription>
-            </CardHeader>
-            <div className="px-6 pb-6">
-              <div className="space-y-4">
-                {dashboardData.recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      activity.type === 'order' ? 'bg-green-100' :
-                      activity.type === 'product' ? 'bg-blue-100' :
-                      activity.type === 'customer' ? 'bg-purple-100' :
-                      'bg-orange-100'
-                    }`}>
-                      {activity.type === 'order' && <ShoppingBag className="w-4 h-4 text-green-600" />}
-                      {activity.type === 'product' && <Package className="w-4 h-4 text-blue-600" />}
-                      {activity.type === 'customer' && <Users className="w-4 h-4 text-purple-600" />}
-                      {activity.type === 'ai' && <Zap className="w-4 h-4 text-orange-600" />}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{activity.message}</p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Revenue</span>
+              <DollarSign className="w-4 h-4 text-orange-600" />
+            </div>
+            <div className="text-2xl font-semibold text-gray-900">{formatCurrency(dashboardData.stats.totalRevenue)}</div>
+            <p className="text-xs text-gray-500 mt-1">Generated</p>
+          </div>
+        </div>
+
+        {/* Store & AI Performance */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <Store className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Store Information</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Store Name</span>
+                <span className="text-sm font-medium text-gray-900">{dashboardData.storeInfo.name}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Store URL</span>
+                <span className="text-sm font-medium text-blue-600">{dashboardData.storeInfo.url}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Products</span>
+                <span className="text-sm font-medium text-gray-900">{dashboardData.storeInfo.products}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Customers</span>
+                <span className="text-sm font-medium text-gray-900">{dashboardData.storeInfo.customers}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm text-gray-600">Total Revenue</span>
+                <span className="text-sm font-medium text-gray-900">{formatCurrency(dashboardData.storeInfo.revenue)}</span>
               </div>
             </div>
-          </Card>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <BarChart3 className="w-5 h-5 text-green-600" />
+              <h3 className="text-lg font-semibold text-gray-900">AI Performance</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">AI Optimizations</span>
+                <span className="text-sm font-medium text-gray-900">{dashboardData.stats.aiOptimizations}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">SEO Score</span>
+                <span className="text-sm font-medium text-gray-900">{dashboardData.stats.seoScore}%</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-600">Products Optimized</span>
+                <span className="text-sm font-medium text-gray-900">45/156</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm text-gray-600">Last Optimization</span>
+                <span className="text-sm font-medium text-gray-900">2 hours ago</span>
+              </div>
+            </div>
+            <Button size="sm" className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
+              <Zap className="w-4 h-4 mr-2" />
+              Run AI Optimization
+            </Button>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Activity className="w-5 h-5 text-purple-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+          </div>
+          <div className="space-y-3">
+            {dashboardData.recentActivity.map((activity, index) => (
+              <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  activity.type === 'order' ? 'bg-green-100' :
+                  activity.type === 'product' ? 'bg-blue-100' :
+                  activity.type === 'customer' ? 'bg-purple-100' :
+                  'bg-orange-100'
+                }`}>
+                  {activity.type === 'order' && <ShoppingBag className="w-4 h-4 text-green-600" />}
+                  {activity.type === 'product' && <Package className="w-4 h-4 text-blue-600" />}
+                  {activity.type === 'customer' && <Users className="w-4 h-4 text-purple-600" />}
+                  {activity.type === 'ai' && <Zap className="w-4 h-4 text-orange-600" />}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">{activity.message}</p>
+                  <p className="text-xs text-gray-500">{activity.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

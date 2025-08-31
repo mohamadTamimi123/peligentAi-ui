@@ -90,11 +90,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen w-full bg-gray-50">
+    <div className="flex h-screen bg-gray-50">
       {/* Left Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 h-screen">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
@@ -107,7 +107,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {sidebarItems.map((item) => {
             const Icon = item.icon
             return (
@@ -128,7 +128,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </nav>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 flex-shrink-0">
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
               <span className="text-white text-sm font-semibold">

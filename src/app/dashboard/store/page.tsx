@@ -25,7 +25,10 @@ import {
   Zap,
   BarChart3,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Wifi,
+  HelpCircle,
+  ArrowLeft
 } from 'lucide-react'
 
 export default function StorePage() {
@@ -33,54 +36,24 @@ export default function StorePage() {
   interface UserData { firstName?: string }
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  interface ActivityItem {
-    type: 'order' | 'product' | 'customer' | 'revenue'
-    message: string
-    time: string
-    amount?: number
-  }
-
-  // Store data state
-  const [storeData, setStoreData] = useState({
-    basicInfo: {
-      name: '',
-      url: '',
-      description: '',
-      currency: 'USD',
-      timezone: 'UTC-5',
-      language: 'English'
-    },
-    statistics: {
-      totalProducts: 0,
-      totalOrders: 0,
-      totalCustomers: 0,
-      totalRevenue: 0,
-      averageOrderValue: 0,
-      conversionRate: 0
-    },
-    settings: {
-      storeStatus: 'active',
-      maintenanceMode: false,
-      autoBackup: true,
-      sslEnabled: true,
-      seoOptimized: true
-    },
-    recentActivity: [] as ActivityItem[],
-    quickStats: {
-      todayOrders: 0,
-      todayRevenue: 0,
-      thisWeekOrders: 0,
-      thisWeekRevenue: 0,
-      thisMonthOrders: 0,
-      thisMonthRevenue: 0
-    }
+  // Store form state
+  const [storeForm, setStoreForm] = useState({
+    storeUrl: '',
+    consumerKey: '',
+    consumerSecret: '',
+    storeName: '',
+    description: '',
+    currency: 'USD',
+    timezone: 'UTC-5',
+    language: 'English'
   })
 
-  const [editForm, setEditForm] = useState(storeData.basicInfo)
+  // Check if form is filled
+  const isFormFilled = storeForm.storeUrl && storeForm.consumerKey && storeForm.consumerSecret
 
   useEffect(() => {
     // Check authentication
@@ -95,13 +68,14 @@ export default function StorePage() {
     try {
       const userData = JSON.parse(user)
       setUserData(userData)
-      
-      // Fetch store data from API
-      fetchStoreData()
     } catch (error) {
       console.error('Error parsing user data:', error)
-      router.push('/signup')
+      router.push('/login')
+      return
     }
+
+    // Load existing store data
+    fetchStoreData()
   }, [router])
 
   const fetchStoreData = async () => {
@@ -135,102 +109,30 @@ export default function StorePage() {
       if (!response.ok) {
         const errorText = await response.text()
         console.error('API Error:', errorText)
-        throw new Error(`HTTP error! status: ${response.status}`)
+        // Don't throw error here, just show empty form
+        setIsLoading(false)
+        return
       }
 
       const data = await response.json()
       console.log('API Response:', data)
       
-      // Ensure all required properties exist with fallback values
-      const safeData = {
-        basicInfo: data.basicInfo || {
-          name: '',
-          url: '',
-          description: '',
-          currency: 'USD',
-          timezone: 'UTC-5',
-          language: 'English'
-        },
-        statistics: data.statistics || {
-          totalProducts: 0,
-          totalOrders: 0,
-          totalCustomers: 0,
-          totalRevenue: 0,
-          averageOrderValue: 0,
-          conversionRate: 0
-        },
-        settings: data.settings || {
-          storeStatus: 'active',
-          maintenanceMode: false,
-          autoBackup: true,
-          sslEnabled: true,
-          seoOptimized: true
-        },
-        recentActivity: data.recentActivity || [],
-        quickStats: data.quickStats || {
-          todayOrders: 0,
-          todayRevenue: 0,
-          thisWeekOrders: 0,
-          thisWeekRevenue: 0,
-          thisMonthOrders: 0,
-          thisMonthRevenue: 0
-        }
+      // Update form with existing data
+      if (data.basicInfo) {
+        setStoreForm({
+          storeUrl: data.basicInfo.url || '',
+          consumerKey: data.basicInfo.consumerKey || '',
+          consumerSecret: data.basicInfo.consumerSecret || '',
+          storeName: data.basicInfo.name || '',
+          description: data.basicInfo.description || '',
+          currency: data.basicInfo.currency || 'USD',
+          timezone: data.basicInfo.timezone || 'UTC-5',
+          language: data.basicInfo.language || 'English'
+        })
       }
-      
-      setStoreData(safeData)
-      setEditForm(safeData.basicInfo)
     } catch (error) {
       console.error('Error fetching store data:', error)
-      setError('Failed to load store information. Please try again.')
-      
-      // Fallback to mock data if API fails
-      setStoreData({
-        basicInfo: {
-          name: 'My WooCommerce Store',
-          url: 'https://my-store.com',
-          description: 'Premium electronics and gadgets store',
-          currency: 'USD',
-          timezone: 'UTC-5',
-          language: 'English'
-        },
-        statistics: {
-          totalProducts: 156,
-          totalOrders: 89,
-          totalCustomers: 234,
-          totalRevenue: 15420,
-          averageOrderValue: 173,
-          conversionRate: 3.2
-        },
-        settings: {
-          storeStatus: 'active',
-          maintenanceMode: false,
-          autoBackup: true,
-          sslEnabled: true,
-          seoOptimized: true
-        },
-        recentActivity: [
-          { type: 'order', message: 'New order #1234 received', time: '2 hours ago', amount: 299 },
-          { type: 'product', message: 'Product "Wireless Headphones" updated', time: '4 hours ago' },
-          { type: 'customer', message: 'New customer registered', time: '6 hours ago' },
-          { type: 'revenue', message: 'Daily revenue target achieved', time: '1 day ago', amount: 1200 }
-        ],
-        quickStats: {
-          todayOrders: 12,
-          todayRevenue: 2400,
-          thisWeekOrders: 67,
-          thisWeekRevenue: 8900,
-          thisMonthOrders: 234,
-          thisMonthRevenue: 15420
-        }
-      })
-      setEditForm({
-        name: 'My WooCommerce Store',
-        url: 'https://my-store.com',
-        description: 'Premium electronics and gadgets store',
-        currency: 'USD',
-        timezone: 'UTC-5',
-        language: 'English'
-      })
+      // Don't show error, just show empty form
     } finally {
       setIsLoading(false)
     }
@@ -240,6 +142,7 @@ export default function StorePage() {
     try {
       setIsSaving(true)
       setError(null)
+      setSuccess(null)
       
       const token = localStorage.getItem('token') || localStorage.getItem('authToken')
       
@@ -258,7 +161,16 @@ export default function StorePage() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          basicInfo: editForm
+          basicInfo: {
+            url: storeForm.storeUrl,
+            consumerKey: storeForm.consumerKey,
+            consumerSecret: storeForm.consumerSecret,
+            name: storeForm.storeName,
+            description: storeForm.description,
+            currency: storeForm.currency,
+            timezone: storeForm.timezone,
+            language: storeForm.language
+          }
         })
       })
 
@@ -272,26 +184,61 @@ export default function StorePage() {
 
       const updatedData = await response.json()
       console.log('Save API Response:', updatedData)
-      setStoreData(prev => ({
-        ...prev,
-        basicInfo: updatedData.basicInfo
-      }))
-      setIsEditing(false)
+      setSuccess('Store information saved successfully!')
       
-      // Show success message
-      alert('Store information updated successfully!')
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(null), 3000)
     } catch (error) {
       console.error('Error updating store data:', error)
-      setError('Failed to update store information. Please try again.')
+      setError('Failed to save store information. Please try again.')
     } finally {
       setIsSaving(false)
     }
   }
 
-  const handleCancel = () => {
-    setEditForm(storeData.basicInfo)
-    setIsEditing(false)
-    setError(null)
+  const handleTestConnection = async () => {
+    try {
+      setIsSaving(true)
+      setError(null)
+      setSuccess(null)
+      
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken')
+      
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
+      const response = await fetch('http://127.0.0.1:5008/api/woocommerce/test-connection', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          storeUrl: storeForm.storeUrl,
+          consumerKey: storeForm.consumerKey,
+          consumerSecret: storeForm.consumerSecret
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Connection failed: ${errorText}`)
+      }
+
+      const result = await response.json()
+      setSuccess('Connection successful! Store is properly configured.')
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (error) {
+      console.error('Error testing connection:', error)
+      setError(`Connection test failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const formatCurrency = (amount: number) => {
@@ -301,82 +248,48 @@ export default function StorePage() {
     }).format(amount)
   }
 
-  if (!userData || isLoading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-500 text-sm font-medium">Loading store information...</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+            <span className="ml-3 text-gray-600">Loading store configuration...</span>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Store className="w-6 h-6 text-indigo-600" />
-              <h1 className="text-xl font-semibold text-gray-900">Store Information</h1>
+              <button
+                onClick={() => router.back()}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">Store Information</h1>
+                <p className="text-sm text-gray-500">Configure your WooCommerce store</p>
+              </div>
             </div>
             
             <div className="flex items-center space-x-2">
-              {!isEditing ? (
-                <>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={fetchStoreData}
-                    className="border-gray-200 text-gray-700 hover:bg-gray-50"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Refresh
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setIsEditing(true)}
-                    className="border-gray-200 text-gray-700 hover:bg-gray-50"
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Store
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleCancel}
-                    className="border-gray-200 text-gray-700 hover:bg-gray-50"
-                    disabled={isSaving}
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancel
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    {isSaving ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={fetchStoreData}
+                className="border-gray-200 text-gray-700 hover:bg-gray-50"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
             </div>
           </div>
         </div>
@@ -398,312 +311,217 @@ export default function StorePage() {
         </div>
       )}
 
+      {/* Success Message */}
+      {success && (
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-xl">
+            <Shield className="w-5 h-5 text-green-600" />
+            <span className="text-sm text-green-700">{success}</span>
+            <button
+              onClick={() => setSuccess(null)}
+              className="ml-auto text-xs text-green-600 hover:text-green-800 underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Store Overview */}
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Page Header */}
         <div className="mb-8">
           <h2 className="text-2xl font-semibold text-gray-900 mb-1">
-            Store Overview
+            WooCommerce Store Configuration
           </h2>
-          <p className="text-gray-500">Manage your WooCommerce store settings and view performance metrics</p>
+          <p className="text-gray-500">Connect your WooCommerce store to enable AI-powered features</p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          <div className="bg-white border border-gray-200 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-600">Today</span>
-              <Calendar className="w-3 h-3 text-blue-600" />
-            </div>
-            <div className="text-lg font-semibold text-gray-900">{storeData.quickStats?.todayOrders || 0}</div>
-            <p className="text-xs text-gray-500">Orders</p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-600">Today</span>
-              <DollarSign className="w-3 h-3 text-green-600" />
-            </div>
-            <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.quickStats?.todayRevenue || 0)}</div>
-            <p className="text-xs text-gray-500">Revenue</p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-600">This Week</span>
-              <TrendingUp className="w-3 h-3 text-purple-600" />
-            </div>
-            <div className="text-lg font-semibold text-gray-900">{storeData.quickStats?.thisWeekOrders || 0}</div>
-            <p className="text-xs text-gray-500">Orders</p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-600">This Week</span>
-              <DollarSign className="w-3 h-3 text-orange-600" />
-            </div>
-            <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.quickStats?.thisWeekRevenue || 0)}</div>
-            <p className="text-xs text-gray-500">Revenue</p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-600">This Month</span>
-              <ShoppingCart className="w-3 h-3 text-indigo-600" />
-            </div>
-            <div className="text-lg font-semibold text-gray-900">{storeData.quickStats?.thisMonthOrders || 0}</div>
-            <p className="text-xs text-gray-500">Orders</p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-600">This Month</span>
-              <CreditCard className="w-3 h-3 text-red-600" />
-            </div>
-            <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.quickStats?.thisMonthRevenue || 0)}</div>
-            <p className="text-xs text-gray-500">Revenue</p>
-          </div>
-        </div>
-
-        {/* Store Information & Settings */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Basic Information */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <Store className="w-5 h-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
-            </div>
-            
-            {!isEditing ? (
-              <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-sm text-gray-600">Store Name</span>
-                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo?.name || 'Not set'}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-sm text-gray-600">Store URL</span>
-                  <span className="text-sm font-medium text-blue-600">{storeData.basicInfo?.url || 'Not set'}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-sm text-gray-600">Description</span>
-                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo?.description || 'Not set'}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-sm text-gray-600">Currency</span>
-                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo?.currency || 'USD'}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-sm text-gray-600">Timezone</span>
-                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo?.timezone || 'UTC-5'}</span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-sm text-gray-600">Language</span>
-                  <span className="text-sm font-medium text-gray-900">{storeData.basicInfo?.language || 'English'}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Store Name</label>
-                  <input
-                    type="text"
-                    value={editForm.name}
-                    onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    disabled={isSaving}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Store URL</label>
-                  <input
-                    type="url"
-                    value={editForm.url}
-                    onChange={(e) => setEditForm({...editForm, url: e.target.value})}
-                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    disabled={isSaving}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Description</label>
-                  <textarea
-                    value={editForm.description}
-                    onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                    rows={3}
-                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    disabled={isSaving}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Currency</label>
-                    <select
-                      value={editForm.currency}
-                      onChange={(e) => setEditForm({...editForm, currency: e.target.value})}
-                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      disabled={isSaving}
-                    >
-                      <option value="USD">USD</option>
-                      <option value="EUR">EUR</option>
-                      <option value="GBP">GBP</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Language</label>
-                    <select
-                      value={editForm.language}
-                      onChange={(e) => setEditForm({...editForm, language: e.target.value})}
-                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      disabled={isSaving}
-                    >
-                      <option value="English">English</option>
-                      <option value="Spanish">Spanish</option>
-                      <option value="French">French</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Store Settings */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <Settings className="w-5 h-5 text-green-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Store Settings</h3>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">Store Status</span>
-                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  storeData.settings?.storeStatus === 'active' 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-red-100 text-red-700'
-                }`}>
-                  {storeData.settings?.storeStatus || 'unknown'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">Maintenance Mode</span>
-                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  storeData.settings?.maintenanceMode 
-                    ? 'bg-yellow-100 text-yellow-700' 
-                    : 'bg-green-100 text-green-700'
-                }`}>
-                  {storeData.settings?.maintenanceMode ? 'Enabled' : 'Disabled'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">Auto Backup</span>
-                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  storeData.settings?.autoBackup 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-red-100 text-red-700'
-                }`}>
-                  {storeData.settings?.autoBackup ? 'Enabled' : 'Disabled'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">SSL Certificate</span>
-                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  storeData.settings?.sslEnabled 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-red-100 text-red-700'
-                }`}>
-                  {storeData.settings?.sslEnabled ? 'Active' : 'Inactive'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm text-gray-600">SEO Optimization</span>
-                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                  storeData.settings?.seoOptimized 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-red-100 text-red-700'
-                }`}>
-                  {storeData.settings?.seoOptimized ? 'Optimized' : 'Not Optimized'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Store Statistics */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8">
-          <div className="flex items-center space-x-2 mb-4">
-            <BarChart3 className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Store Statistics</h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">{storeData.statistics?.totalProducts || 0}</div>
-              <p className="text-sm text-gray-600">Total Products</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">{storeData.statistics?.totalOrders || 0}</div>
-              <p className="text-sm text-gray-600">Total Orders</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">{storeData.statistics?.totalCustomers || 0}</div>
-              <p className="text-sm text-gray-600">Total Customers</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900">{formatCurrency(storeData.statistics?.totalRevenue || 0)}</div>
-              <p className="text-sm text-gray-600">Total Revenue</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t border-gray-100">
-            <div className="text-center">
-              <div className="text-lg font-semibold text-gray-900">{formatCurrency(storeData.statistics?.averageOrderValue || 0)}</div>
-              <p className="text-sm text-gray-600">Average Order Value</p>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-semibold text-gray-900">{storeData.statistics?.conversionRate || 0}%</div>
-              <p className="text-sm text-gray-600">Conversion Rate</p>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-semibold text-gray-900">87%</div>
-              <p className="text-sm text-gray-600">Customer Satisfaction</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Activity */}
+        {/* Configuration Form */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <Zap className="w-5 h-5 text-orange-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+          <div className="flex items-center space-x-2 mb-6">
+            <Store className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Store Connection</h3>
           </div>
-          <div className="space-y-3">
-            {storeData.recentActivity && storeData.recentActivity.length > 0 ? (
-              storeData.recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    activity.type === 'order' ? 'bg-green-100' :
-                    activity.type === 'product' ? 'bg-blue-100' :
-                    activity.type === 'customer' ? 'bg-purple-100' :
-                    'bg-orange-100'
-                  }`}>
-                    {activity.type === 'order' && <ShoppingCart className="w-4 h-4 text-green-600" />}
-                    {activity.type === 'product' && <Package className="w-4 h-4 text-blue-600" />}
-                    {activity.type === 'customer' && <Users className="w-4 h-4 text-purple-600" />}
-                    {activity.type === 'revenue' && <DollarSign className="w-4 h-4 text-orange-600" />}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{activity.message}</p>
-                    <p className="text-xs text-gray-500">{activity.time}</p>
-                  </div>
-                  {activity.amount && (
-                    <div className="text-sm font-medium text-gray-900">
-                      {formatCurrency(activity.amount)}
-                    </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No recent activity</p>
+
+          <div className="space-y-6">
+            {/* Store URL */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Store URL *
+              </label>
+              <input
+                type="url"
+                value={storeForm.storeUrl}
+                onChange={(e) => setStoreForm({...storeForm, storeUrl: e.target.value})}
+                placeholder="https://your-store.com"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSaving}
+              />
+              <p className="text-xs text-gray-500 mt-1">Enter your WooCommerce store URL (e.g., https://mysite.com)</p>
+            </div>
+
+            {/* Consumer Key */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Consumer Key *
+              </label>
+              <input
+                type="text"
+                value={storeForm.consumerKey}
+                onChange={(e) => setStoreForm({...storeForm, consumerKey: e.target.value})}
+                placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSaving}
+              />
+              <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Key</p>
+            </div>
+
+            {/* Consumer Secret */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Consumer Secret *
+              </label>
+              <input
+                type="password"
+                value={storeForm.consumerSecret}
+                onChange={(e) => setStoreForm({...storeForm, consumerSecret: e.target.value})}
+                placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSaving}
+              />
+              <p className="text-xs text-gray-500 mt-1">Your WooCommerce REST API Consumer Secret</p>
+            </div>
+
+            {/* Store Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Store Name
+              </label>
+              <input
+                type="text"
+                value={storeForm.storeName}
+                onChange={(e) => setStoreForm({...storeForm, storeName: e.target.value})}
+                placeholder="My Online Store"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSaving}
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
+              <textarea
+                value={storeForm.description}
+                onChange={(e) => setStoreForm({...storeForm, description: e.target.value})}
+                placeholder="Brief description of your store..."
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSaving}
+              />
+            </div>
+
+            {/* Currency and Language */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Currency
+                </label>
+                <select
+                  value={storeForm.currency}
+                  onChange={(e) => setStoreForm({...storeForm, currency: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isSaving}
+                >
+                  <option value="USD">USD - US Dollar</option>
+                  <option value="EUR">EUR - Euro</option>
+                  <option value="GBP">GBP - British Pound</option>
+                  <option value="CAD">CAD - Canadian Dollar</option>
+                  <option value="AUD">AUD - Australian Dollar</option>
+                </select>
               </div>
-            )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Language
+                </label>
+                <select
+                  value={storeForm.language}
+                  onChange={(e) => setStoreForm({...storeForm, language: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isSaving}
+                >
+                  <option value="English">English</option>
+                  <option value="Spanish">Spanish</option>
+                  <option value="French">French</option>
+                  <option value="German">German</option>
+                  <option value="Italian">Italian</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between pt-6 border-t border-gray-200 mt-8">
+            <div className="text-sm text-gray-500">
+              * Required fields
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleTestConnection}
+                disabled={!isFormFilled || isSaving}
+                className="border-gray-200 text-gray-700 hover:bg-gray-50"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-600 border-t-transparent mr-2"></div>
+                    Testing...
+                  </>
+                ) : (
+                  <>
+                    <Wifi className="w-4 h-4 mr-2" />
+                    Test Connection
+                  </>
+                )}
+              </Button>
+              <Button 
+                size="sm" 
+                onClick={handleSave}
+                disabled={!isFormFilled || isSaving}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Configuration
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Help Section */}
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mt-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <HelpCircle className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-blue-900">How to get your API credentials?</h3>
+          </div>
+          <div className="space-y-3 text-sm text-blue-800">
+            <p>1. Go to your WooCommerce admin panel</p>
+            <p>2. Navigate to <strong>WooCommerce → Settings → Advanced → REST API</strong></p>
+            <p>3. Click <strong>"Add Key"</strong> to create a new API key</p>
+            <p>4. Set permissions to <strong>"Read/Write"</strong></p>
+            <p>5. Copy the <strong>Consumer Key</strong> and <strong>Consumer Secret</strong></p>
+            <p>6. Paste them in the form above</p>
           </div>
         </div>
       </div>

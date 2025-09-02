@@ -15,15 +15,10 @@ interface PackageOption {
   popular?: boolean
 }
 
-const PACKAGES: PackageOption[] = [
-  { id: 'p1k', name: 'Starter', tokens: 1000, priceUSD: 5 },
-  { id: 'p5k', name: 'Growth', tokens: 5000, priceUSD: 20, popular: true },
-  { id: 'p10k', name: 'Scale', tokens: 10000, priceUSD: 35 },
-]
-
 export default function BillingPage() {
   const router = useRouter()
-  const [selected, setSelected] = useState<PackageOption>(PACKAGES[1])
+  const [plans, setPlans] = useState<PackageOption[]>([])
+  const [selected, setSelected] = useState<PackageOption | null>(null)
   const [status, setStatus] = useState<PurchaseState>('idle')
   const [message, setMessage] = useState<string>('')
   const [isAuthed, setIsAuthed] = useState<boolean>(false)
@@ -36,6 +31,46 @@ export default function BillingPage() {
       return
     }
     setIsAuthed(true)
+    
+    const fetchPlans = async () => {
+      try {
+        const authToken = localStorage.getItem('token') || localStorage.getItem('authToken')
+        const res = await fetch('http://127.0.0.1:5008/api/billings/plans', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        if (!res.ok) throw new Error('Failed to load plans')
+        const data = await res.json().catch(() => ({}))
+        const raw = Array.isArray(data) ? data : (data?.plans || [])
+        const mapped: PackageOption[] = raw.map((p: any, idx: number) => ({
+          id: String(p.id ?? p._id ?? p.planId ?? `plan-${idx}`),
+          name: String(p.name ?? p.title ?? p.label ?? `Plan ${idx + 1}`),
+          tokens: Number(p.tokens ?? p.credits ?? p.tokenAmount ?? 0),
+          priceUSD: Number(p.priceUSD ?? p.price ?? p.amountUSD ?? 0),
+          popular: Boolean(p.popular ?? (idx === 1))
+        })).filter((p: PackageOption) => p.tokens > 0)
+        const fallback: PackageOption[] = [
+          { id: 'p1k', name: 'Starter', tokens: 1000, priceUSD: 5 },
+          { id: 'p5k', name: 'Growth', tokens: 5000, priceUSD: 20, popular: true },
+          { id: 'p10k', name: 'Scale', tokens: 10000, priceUSD: 35 }
+        ]
+        const finalPlans = mapped.length ? mapped : fallback
+        setPlans(finalPlans)
+        setSelected(finalPlans.find(p => p.popular) || finalPlans[0] || null)
+      } catch (_) {
+        const fallback: PackageOption[] = [
+          { id: 'p1k', name: 'Starter', tokens: 1000, priceUSD: 5 },
+          { id: 'p5k', name: 'Growth', tokens: 5000, priceUSD: 20, popular: true },
+          { id: 'p10k', name: 'Scale', tokens: 10000, priceUSD: 35 }
+        ]
+        setPlans(fallback)
+        setSelected(fallback[1])
+      }
+    }
+    fetchPlans()
   }, [router])
 
   const handlePurchase = async () => {
@@ -51,16 +86,13 @@ export default function BillingPage() {
       }
 
       // Try preferred endpoint first; backend may expose different paths
-      const endpoints = [
-        'http://127.0.0.1:5008/api/chat/tokens/purchase',
-        'http://127.0.0.1:5008/api/chat/purchase',
-        'http://127.0.0.1:5008/api/credits/purchase'
-      ]
+      const endpoints = 
+        'http://127.0.0.1:5008/api/auth/purchase-tokens'
 
       let response: Response | null = null
-      for (const url of endpoints) {
+     
         try {
-          response = await fetch(url, {
+          response = await fetch(endpoints, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${authToken}`,
@@ -72,11 +104,13 @@ export default function BillingPage() {
               amountUSD: selected.priceUSD
             })
           })
-          if (response.ok) break
+          if (response.ok) {
+            
+          }
         } catch (_) {
           // try next endpoint
         }
-      }
+     
 
       if (!response) throw new Error('No response from server')
       if (!response.ok) {
@@ -122,12 +156,12 @@ export default function BillingPage() {
 
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {PACKAGES.map((pkg) => (
+          {plans.map((pkg) => (
             <button
               key={pkg.id}
               onClick={() => setSelected(pkg)}
               className={`text-left bg-white border rounded-2xl p-6 transition-all ${
-                selected.id === pkg.id
+                selected && selected.id === pkg.id
                   ? 'border-blue-500 shadow-sm'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
@@ -160,21 +194,21 @@ export default function BillingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
             <div className="p-3 bg-gray-50 rounded-xl">
               <div className="text-gray-500">Package</div>
-              <div className="font-medium text-gray-900">{selected.name}</div>
+              <div className="font-medium text-gray-900">{selected?.name || '-'}</div>
             </div>
             <div className="p-3 bg-gray-50 rounded-xl">
               <div className="text-gray-500">Tokens</div>
-              <div className="font-medium text-gray-900">{selected.tokens.toLocaleString()}</div>
+              <div className="font-medium text-gray-900">{selected ? selected.tokens.toLocaleString() : '-'}</div>
             </div>
             <div className="p-3 bg-gray-50 rounded-xl">
               <div className="text-gray-500">Price</div>
-              <div className="font-medium text-gray-900">${selected.priceUSD} USD</div>
+              <div className="font-medium text-gray-900">{selected ? `$${selected.priceUSD} USD` : '-'}</div>
             </div>
           </div>
 
           <Button
             onClick={handlePurchase}
-            disabled={status === 'loading'}
+            disabled={status === 'loading' || !selected}
             className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
           >
             {status === 'loading' ? (
@@ -185,7 +219,7 @@ export default function BillingPage() {
             ) : (
               <>
                 <Zap className="w-4 h-4 mr-2" />
-                Buy {selected.tokens.toLocaleString()} Tokens
+                {selected ? `Buy ${selected.tokens.toLocaleString()} Tokens` : 'Select a plan'}
               </>
             )}
           </Button>

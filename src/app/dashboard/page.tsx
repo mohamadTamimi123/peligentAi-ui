@@ -75,6 +75,29 @@ export default function DashboardPage() {
       const userData = JSON.parse(user)
       setUserData(userData)
       
+      // Fetch remaining token credits from backend
+      const fetchTokenCredits = async () => {
+        try {
+          const authToken = localStorage.getItem('token') || localStorage.getItem('authToken')
+          if (!authToken) return
+          const response = await fetch('http://127.0.0.1:5008/api/credits', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json'
+            }
+          })
+          if (response.ok) {
+            const data = await response.json()
+            const credits = data?.remainingTokens ?? data?.tokenCredits ?? data?.credits ?? data?.tokensRemaining ?? 0
+            setDashboardData(prev => ({ ...prev, tokenCredits: Number(credits) || 0 }))
+          }
+        } catch (err) {
+          console.error('Failed to fetch token credits:', err)
+        }
+      }
+      fetchTokenCredits()
+      
       // Simulate loading dashboard data
       setTimeout(() => {
         setIsLoading(false)
@@ -237,7 +260,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-600">Token Credits</span>
+              <span className="text-sm font-medium text-gray-600">Remaining Tokens</span>
               <Zap className="w-4 h-4 text-blue-600" />
             </div>
             <div className="text-2xl font-semibold text-gray-900">{dashboardData.tokenCredits.toLocaleString()}</div>

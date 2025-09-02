@@ -80,7 +80,7 @@ export default function DashboardPage() {
         try {
           const authToken = localStorage.getItem('token') || localStorage.getItem('authToken')
           if (!authToken) return
-          const response = await fetch('http://127.0.0.1:5008/api/credits', {
+          const response = await fetch('http://127.0.0.1:5008/api/chat/tokens', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${authToken}`,
@@ -265,6 +265,17 @@ export default function DashboardPage() {
             </div>
             <div className="text-2xl font-semibold text-gray-900">{dashboardData.tokenCredits.toLocaleString()}</div>
             <p className="text-xs text-gray-500 mt-1">Available</p>
+            <div className="mt-3">
+              <Button
+                onClick={() => {
+                  window.location.href = '/dashboard/billing'
+                }}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+              >
+                Buy Tokens
+              </Button>
+            </div>
           </div>
 
           <div className="bg-white border border-gray-200 rounded-2xl p-6">

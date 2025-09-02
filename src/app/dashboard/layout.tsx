@@ -64,6 +64,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       router.push('/dashboard/store')
     } else if (itemId === 'chat') {
       router.push('/dashboard')
+    } else if (itemId === 'billing') {
+      router.push('/dashboard/billing')
     }
     // Add other navigation logic as needed
   }
@@ -74,7 +76,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { id: 'analytics', icon: BarChart3, label: 'Analytics', color: 'text-green-600' },
     { id: 'products', icon: ShoppingBag, label: 'Products', color: 'text-purple-600' },
     { id: 'customers', icon: Users, label: 'Customers', color: 'text-orange-600' },
-    { id: 'billing', icon: CreditCard, label: 'Billing', color: 'text-red-600' },
+    { id: 'billing', icon: CreditCard, label: 'Buy Tokens', color: 'text-red-600' },
     { id: 'help', icon: HelpCircle, label: 'Help', color: 'text-gray-600' },
   ]
 

@@ -22,6 +22,7 @@ export default function BillingPage() {
   const [status, setStatus] = useState<PurchaseState>('idle')
   const [message, setMessage] = useState<string>('')
   const [isAuthed, setIsAuthed] = useState<boolean>(false)
+  const [isLoadingPlans, setIsLoadingPlans] = useState<boolean>(true)
 
   useEffect(() => {
     const user = localStorage.getItem('user')
@@ -35,7 +36,7 @@ export default function BillingPage() {
     const fetchPlans = async () => {
       try {
         const authToken = localStorage.getItem('token') || localStorage.getItem('authToken')
-        const res = await fetch('http://127.0.0.1:5008/api/billings/plans', {
+        const res = await fetch('http://127.0.0.1:5008/api/billing/plans', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${authToken}`,
@@ -52,22 +53,13 @@ export default function BillingPage() {
           priceUSD: Number(p.priceUSD ?? p.price ?? p.amountUSD ?? 0),
           popular: Boolean(p.popular ?? (idx === 1))
         })).filter((p: PackageOption) => p.tokens > 0)
-        const fallback: PackageOption[] = [
-          { id: 'p1k', name: 'Starter', tokens: 1000, priceUSD: 5 },
-          { id: 'p5k', name: 'Growth', tokens: 5000, priceUSD: 20, popular: true },
-          { id: 'p10k', name: 'Scale', tokens: 10000, priceUSD: 35 }
-        ]
-        const finalPlans = mapped.length ? mapped : fallback
-        setPlans(finalPlans)
-        setSelected(finalPlans.find(p => p.popular) || finalPlans[0] || null)
+        setPlans(mapped)
+        setSelected(mapped.find(p => p.popular) || mapped[0] || null)
       } catch (_) {
-        const fallback: PackageOption[] = [
-          { id: 'p1k', name: 'Starter', tokens: 1000, priceUSD: 5 },
-          { id: 'p5k', name: 'Growth', tokens: 5000, priceUSD: 20, popular: true },
-          { id: 'p10k', name: 'Scale', tokens: 10000, priceUSD: 35 }
-        ]
-        setPlans(fallback)
-        setSelected(fallback[1])
+        setPlans([])
+        setSelected(null)
+      } finally {
+        setIsLoadingPlans(false)
       }
     }
     fetchPlans()
@@ -156,7 +148,18 @@ export default function BillingPage() {
 
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {plans.map((pkg) => (
+          {isLoadingPlans && (
+            <>
+              {[0,1,2].map((i) => (
+                <div key={i} className="bg-white border border-gray-200 rounded-2xl p-6 animate-pulse">
+                  <div className="h-4 w-24 bg-gray-100 rounded mb-4"></div>
+                  <div className="h-6 w-32 bg-gray-100 rounded mb-2"></div>
+                  <div className="h-4 w-20 bg-gray-100 rounded"></div>
+                </div>
+              ))}
+            </>
+          )}
+          {!isLoadingPlans && plans.map((pkg) => (
             <button
               key={pkg.id}
               onClick={() => setSelected(pkg)}
@@ -176,6 +179,11 @@ export default function BillingPage() {
               <div className="text-sm text-gray-500">${pkg.priceUSD} USD</div>
             </button>
           ))}
+          {!isLoadingPlans && plans.length === 0 && (
+            <div className="col-span-full p-6 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-600">
+              No plans available.
+            </div>
+          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl p-6">

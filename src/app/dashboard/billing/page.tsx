@@ -26,7 +26,7 @@ export default function BillingPage() {
 
   useEffect(() => {
     const user = localStorage.getItem('user')
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken')
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('accessToken')
     if (!user || !token) {
       router.push('/login')
       return
@@ -35,7 +35,11 @@ export default function BillingPage() {
     
     const fetchPlans = async () => {
       try {
-        const authToken = localStorage.getItem('token') || localStorage.getItem('authToken')
+        const authToken = localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('accessToken')
+        if (!authToken) {
+          router.push('/login')
+          return
+        }
         const res = await fetch('http://127.0.0.1:5008/api/billing/plans', {
           method: 'GET',
           headers: {
@@ -43,9 +47,19 @@ export default function BillingPage() {
             'Content-Type': 'application/json'
           }
         })
-        if (!res.ok) throw new Error('Failed to load plans')
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            // Token expired or invalid
+            localStorage.removeItem('token')
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('accessToken')
+            router.push('/login')
+            return
+          }
+          throw new Error('Failed to load plans')
+        }
         const data = await res.json().catch(() => ({}))
-        const raw = Array.isArray(data) ? data : (data?.plans || [])
+        const raw = Array.isArray(data) ? data : (data?.data || [])
         const mapped: PackageOption[] = raw.map((p: any, idx: number) => ({
           id: String(p.id ?? p._id ?? p.planId ?? `plan-${idx}`),
           name: String(p.name ?? p.title ?? p.label ?? `Plan ${idx + 1}`),
@@ -70,7 +84,7 @@ export default function BillingPage() {
     try {
       setStatus('loading')
       setMessage('')
-      const authToken = localStorage.getItem('token') || localStorage.getItem('authToken')
+      const authToken = localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('accessToken')
       if (!authToken) {
         setStatus('error')
         setMessage('Authentication required')
@@ -78,42 +92,76 @@ export default function BillingPage() {
       }
 
       // Try preferred endpoint first; backend may expose different paths
-      const endpoints = 
-        'http://127.0.0.1:5008/api/auth/purchase-tokens'
+
+      const endpoint = 'http://127.0.0.1:5008/api/billing/checkout';
+      
 
       let response: Response | null = null
-     
-        try {
-          response = await fetch(endpoints, {
+      
+  
+      
+          response = await fetch(endpoint, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${authToken}`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              packageId: selected.id,
+              planId: selected.id,
               tokens: selected.tokens,
               amountUSD: selected.priceUSD
             })
           })
-          if (response.ok) {
-            
-          }
-        } catch (_) {
-          // try next endpoint
-        }
+     
+        
+       
+  
      
 
       if (!response) throw new Error('No response from server')
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          // Token expired or invalid
+          localStorage.removeItem('token')
+          localStorage.removeItem('authToken')
+          localStorage.removeItem('accessToken')
+          setStatus('error')
+          setMessage('Authentication expired. Please login again.')
+          router.push('/login')
+          return
+        }
         const err = await response.text()
         throw new Error(err || 'Purchase failed')
       }
 
-      const data = await response.json().catch(() => ({}))
-      const serverMsg = data?.message || 'Purchase successful'
-      setStatus('success')
-      setMessage(serverMsg)
+              const data = await response.json().catch(() => ({}))
+ 
+        console.log('data', data)
+        
+        // Check if we have a redirect URL (payment gateway)
+        if (data.url) {
+          // ✅ به درگاه پرداخت redirect می‌شود
+          window.location.href = data.url;
+        } else if (data.status === 'cancelled' || data.status === 'failed') {
+          // Payment was cancelled or failed
+          setStatus('error')
+          setMessage(data.message || 'Payment was cancelled')
+          
+          // Redirect to cancel page after a short delay
+          setTimeout(() => {
+            router.push('/payment-cancel')
+          }, 2000)
+        } else {
+          // Direct success response
+          const serverMsg = data?.message || 'Purchase successful'
+          setStatus('success')
+          setMessage(serverMsg)
+          
+          // Redirect to success page after a short delay
+          setTimeout(() => {
+            router.push('/payment-success')
+          }, 2000)
+        }
     } catch (err: any) {
       setStatus('error')
       setMessage(err?.message || 'Something went wrong')

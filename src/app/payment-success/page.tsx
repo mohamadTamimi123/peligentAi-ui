@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { CheckCircle2, ArrowRight, CreditCard, Zap, Home, RefreshCw } from 'lucide-react'
@@ -14,7 +14,7 @@ interface PaymentData {
   timestamp?: string
 }
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [paymentData, setPaymentData] = useState<PaymentData>({})
@@ -152,112 +152,109 @@ export default function PaymentSuccessPage() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Success Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-green-100 p-8 mb-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-green-200 p-8 mb-8">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-10 h-10 text-green-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
-            <p className="text-gray-600 text-lg">
-              Your payment has been processed successfully. Your tokens are now available in your account.
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
+            <p className="text-gray-600">Your payment has been processed successfully</p>
           </div>
 
-          {/* Payment Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-gray-50 rounded-2xl p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mr-3">
-                  <CreditCard className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Payment Details</h3>
-                  <p className="text-sm text-gray-500">Transaction information</p>
-                </div>
+          {/* Transaction Details */}
+          <div className="bg-gray-50 rounded-2xl p-6 mb-8">
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center mr-3">
+                <CreditCard className="w-5 h-5 text-green-600" />
               </div>
-              
-              <div className="space-y-3">
-                {paymentData.transactionId && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Transaction ID:</span>
-                    <span className="font-mono text-sm text-gray-900">{paymentData.transactionId}</span>
-                  </div>
-                )}
-                {paymentData.amount && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Amount:</span>
-                    <span className="font-semibold text-gray-900">${paymentData.amount} USD</span>
-                  </div>
-                )}
-                {paymentData.timestamp && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Date:</span>
-                    <span className="text-gray-900">
-                      {new Date(paymentData.timestamp).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                )}
+              <div>
+                <h3 className="font-semibold text-gray-900">Transaction Details</h3>
+                <p className="text-sm text-gray-500">Payment information</p>
               </div>
             </div>
-
-            <div className="bg-gray-50 rounded-2xl p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center mr-3">
-                  <Zap className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Token Details</h3>
-                  <p className="text-sm text-gray-500">Your purchase summary</p>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                {paymentData.planName && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Plan:</span>
-                    <span className="font-semibold text-gray-900">{paymentData.planName}</span>
-                  </div>
-                )}
-                {paymentData.tokens && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tokens Added:</span>
-                    <span className="font-semibold text-gray-900">{paymentData.tokens.toLocaleString()}</span>
-                  </div>
-                )}
+            
+            <div className="space-y-3">
+              {paymentData.transactionId && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                    Active
+                  <span className="text-gray-600">Transaction ID:</span>
+                  <span className="font-mono text-sm text-gray-900">{paymentData.transactionId}</span>
+                </div>
+              )}
+              {paymentData.amount && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Amount:</span>
+                  <span className="font-semibold text-gray-900">${paymentData.amount}</span>
+                </div>
+              )}
+              {paymentData.timestamp && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Date:</span>
+                  <span className="text-gray-900">
+                    {new Date(paymentData.timestamp).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </span>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Button
-              onClick={handleGoToDashboard}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3"
-            >
-              <Home className="w-4 h-4 mr-2" />
-              Go to Dashboard
-            </Button>
-            <Button
-              onClick={handleBuyMore}
-              variant="outline"
-              className="w-full border-gray-200 hover:border-gray-300 rounded-xl py-3"
-            >
-              <ArrowRight className="w-4 h-4 mr-2" />
-              Buy More Tokens
-            </Button>
+          {/* Token Details */}
+          <div className="bg-gray-50 rounded-2xl p-6">
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center mr-3">
+                <Zap className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Token Details</h3>
+                <p className="text-sm text-gray-500">Your purchase summary</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              {paymentData.planName && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Plan:</span>
+                  <span className="font-semibold text-gray-900">{paymentData.planName}</span>
+                </div>
+              )}
+              {paymentData.tokens && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Tokens Added:</span>
+                  <span className="font-semibold text-gray-900">{paymentData.tokens.toLocaleString()}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Status:</span>
+                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                  Active
+                </span>
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Button
+            onClick={handleGoToDashboard}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3"
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Go to Dashboard
+          </Button>
+          <Button
+            onClick={handleBuyMore}
+            variant="outline"
+            className="w-full border-gray-200 hover:border-gray-300 rounded-xl py-3"
+          >
+            <ArrowRight className="w-4 h-4 mr-2" />
+            Buy More Tokens
+          </Button>
         </div>
 
         {/* Additional Info */}
@@ -295,5 +292,20 @@ export default function PaymentSuccessPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading...</p>
+        </div>
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   )
 }

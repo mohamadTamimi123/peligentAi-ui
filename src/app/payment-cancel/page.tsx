@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { XCircle, ArrowLeft, RefreshCw, Home, CreditCard, AlertTriangle } from 'lucide-react'
+import { XCircle, RefreshCw, Home, CreditCard, AlertTriangle } from 'lucide-react'
 
 interface CancelData {
   transactionId?: string
@@ -13,7 +13,7 @@ interface CancelData {
   timestamp?: string
 }
 
-export default function PaymentCancelPage() {
+function PaymentCancelContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [cancelData, setCancelData] = useState<CancelData>({})
@@ -98,10 +98,6 @@ export default function PaymentCancelPage() {
     window.location.reload()
   }
 
-  const handleGoBack = () => {
-    router.back()
-  }
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
@@ -163,114 +159,77 @@ export default function PaymentCancelPage() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Cancellation Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-orange-100 p-8 mb-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-orange-200 p-8 mb-8">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <XCircle className="w-10 h-10 text-orange-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Cancelled</h1>
-            <p className="text-gray-600 text-lg">
-              Your payment was not completed. No charges were made to your account.
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Cancelled</h2>
+            <p className="text-gray-600">Your payment was not completed</p>
           </div>
 
-          {/* Cancellation Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-gray-50 rounded-2xl p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center mr-3">
-                  <CreditCard className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Transaction Details</h3>
-                  <p className="text-sm text-gray-500">Cancellation information</p>
-                </div>
+          {/* Transaction Details */}
+          <div className="bg-gray-50 rounded-2xl p-6 mb-8">
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center mr-3">
+                <CreditCard className="w-5 h-5 text-orange-600" />
               </div>
-              
-              <div className="space-y-3">
-                {cancelData.transactionId && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Transaction ID:</span>
-                    <span className="font-mono text-sm text-gray-900">{cancelData.transactionId}</span>
-                  </div>
-                )}
-                {cancelData.amount && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Amount:</span>
-                    <span className="font-semibold text-gray-900">${cancelData.amount} USD</span>
-                  </div>
-                )}
-                {cancelData.timestamp && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Date:</span>
-                    <span className="text-gray-900">
-                      {new Date(cancelData.timestamp).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
-                    Cancelled
-                  </span>
-                </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Transaction Details</h3>
+                <p className="text-sm text-gray-500">Payment information</p>
               </div>
             </div>
-
-            <div className="bg-gray-50 rounded-2xl p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mr-3">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
+            
+            <div className="space-y-3">
+              {cancelData.transactionId && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Transaction ID:</span>
+                  <span className="font-mono text-sm text-gray-900">{cancelData.transactionId}</span>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Cancellation Reason</h3>
-                  <p className="text-sm text-gray-500">Why the payment was cancelled</p>
+              )}
+              {cancelData.reason && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Reason:</span>
+                  <span className="text-gray-900">{cancelData.reason}</span>
                 </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="p-3 bg-orange-50 rounded-xl">
-                  <p className="text-sm text-orange-800">
-                    {cancelData.reason || 'Payment was cancelled by user or due to technical issues'}
-                  </p>
+              )}
+              {cancelData.amount && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Amount:</span>
+                  <span className="font-semibold text-gray-900">${cancelData.amount}</span>
                 </div>
-                {cancelData.planName && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Plan:</span>
-                    <span className="font-semibold text-gray-900">{cancelData.planName}</span>
-                  </div>
-                )}
-                <div className="text-xs text-gray-500 mt-4">
-                  <p>• No charges were made to your account</p>
-                  <p>• Your payment method was not charged</p>
-                  <p>• You can try again anytime</p>
+              )}
+              {cancelData.planName && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Plan:</span>
+                  <span className="font-semibold text-gray-900">{cancelData.planName}</span>
                 </div>
-              </div>
+              )}
+              {cancelData.timestamp && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Date:</span>
+                  <span className="text-gray-900">
+                    {new Date(cancelData.timestamp).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button
               onClick={handleRetryPayment}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3"
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <CreditCard className="w-4 h-4 mr-2" />
               Try Again
-            </Button>
-            <Button
-              onClick={handleGoBack}
-              variant="outline"
-              className="w-full border-gray-200 hover:border-gray-300 rounded-xl py-3"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Go Back
             </Button>
             <Button
               onClick={handleGoToDashboard}
@@ -278,55 +237,60 @@ export default function PaymentCancelPage() {
               className="w-full border-gray-200 hover:border-gray-300 rounded-xl py-3"
             >
               <Home className="w-4 h-4 mr-2" />
-              Dashboard
+              Go to Dashboard
             </Button>
           </div>
         </div>
 
-        {/* Help Section */}
+        {/* Additional Info */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Need Help?</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Common Reasons for Cancellation:</h4>
-              <ul className="space-y-1 text-gray-600">
-                <li>• Insufficient funds in your account</li>
-                <li>• Payment method was declined</li>
-                <li>• Browser or network issues</li>
-                <li>• Payment gateway timeout</li>
-                <li>• User cancelled the payment</li>
-              </ul>
+          <h3 className="font-semibold text-gray-900 mb-4">What happened?</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-orange-600 font-semibold text-xs">1</span>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">Payment Cancelled</h4>
+                <p className="text-gray-600">Your payment was not completed successfully.</p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">What You Can Do:</h4>
-              <ul className="space-y-1 text-gray-600">
-                <li>• Check your payment method details</li>
-                <li>• Ensure sufficient funds are available</li>
-                <li>• Try a different payment method</li>
-                <li>• Contact your bank if needed</li>
-                <li>• Try again in a few minutes</li>
-              </ul>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-orange-600 font-semibold text-xs">2</span>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">No Charges</h4>
+                <p className="text-gray-600">No charges were made to your account.</p>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Contact Support */}
-        <div className="bg-blue-50 rounded-2xl border border-blue-200 p-6 mt-6">
-          <div className="text-center">
-            <h3 className="font-semibold text-gray-900 mb-2">Still Having Issues?</h3>
-            <p className="text-gray-600 mb-4">
-              If you continue to experience problems, our support team is here to help.
-            </p>
-            <Button
-              onClick={() => router.push('/contact')}
-              variant="outline"
-              className="border-blue-300 hover:border-blue-400 text-blue-700"
-            >
-              Contact Support
-            </Button>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-orange-600 font-semibold text-xs">3</span>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">Try Again</h4>
+                <p className="text-gray-600">You can try the payment again anytime.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PaymentCancelPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-200 border-t-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading...</p>
+        </div>
+      </div>
+    }>
+      <PaymentCancelContent />
+    </Suspense>
   )
 }

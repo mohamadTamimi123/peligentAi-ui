@@ -3,27 +3,14 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Ca
 import { 
   ArrowRight, 
   Zap, 
-  Shield, 
-  Users, 
-  Code, 
-  Rocket, 
   Sparkles,
-  ShoppingCart,
-  TrendingUp,
   CheckCircle,
   Globe,
   Target,
   MessageSquare,
   Image,
   BarChart3,
-  Bot,
-  CreditCard,
-  Clock,
-  Star,
-  DollarSign,
-  Package,
-  User,
-  Calendar
+  Star
 } from 'lucide-react'
 
 export default function Home() {
@@ -407,7 +394,7 @@ export default function Home() {
                   <CardTitle className="text-lg">{customer.name}</CardTitle>
                   <div className="text-sm text-gray-600 mb-2">{customer.industry}</div>
                   <div className="text-green-600 font-bold mb-4">{customer.improvement}</div>
-                  <CardDescription className="italic">"{customer.testimonial}"</CardDescription>
+                  <CardDescription className="italic">&quot;{customer.testimonial}&quot;</CardDescription>
                 </CardHeader>
               </Card>
             ))}

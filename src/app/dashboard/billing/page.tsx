@@ -60,7 +60,7 @@ export default function BillingPage() {
         }
         const data = await res.json().catch(() => ({}))
         const raw = Array.isArray(data) ? data : (data?.data || [])
-        const mapped: PackageOption[] = raw.map((p: any, idx: number) => ({
+        const mapped: PackageOption[] = raw.map((p: Record<string, unknown>, idx: number) => ({
           id: String(p.id ?? p._id ?? p.planId ?? `plan-${idx}`),
           name: String(p.name ?? p.title ?? p.label ?? `Plan ${idx + 1}`),
           tokens: Number(p.tokens ?? p.credits ?? p.tokenAmount ?? 0),
@@ -69,7 +69,7 @@ export default function BillingPage() {
         })).filter((p: PackageOption) => p.tokens > 0)
         setPlans(mapped)
         setSelected(mapped.find(p => p.popular) || mapped[0] || null)
-      } catch (_) {
+      } catch {
         setPlans([])
         setSelected(null)
       } finally {
@@ -162,9 +162,9 @@ export default function BillingPage() {
             router.push('/payment-success')
           }, 2000)
         }
-    } catch (err: any) {
+          } catch (err: unknown) {
       setStatus('error')
-      setMessage(err?.message || 'Something went wrong')
+      setMessage(err instanceof Error ? err.message : 'Something went wrong')
     }
   }
 

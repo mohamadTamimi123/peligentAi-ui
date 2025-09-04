@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { 
   Store, 
   Save, 
@@ -12,18 +11,7 @@ import {
   Loader2
 } from 'lucide-react'
 
-interface ActivityItem {
-  type: string
-  message: string
-  time: string
-  amount: number
-}
-
 export default function StorePage() {
-  // User data state
-  interface UserData { firstName?: string }
-  const [userData, setUserData] = useState<UserData | null>(null)
-
   // Loading and feedback states
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -58,8 +46,7 @@ export default function StorePage() {
     const user = localStorage.getItem('user')
     if (user) {
       try {
-        const userData = JSON.parse(user)
-        setUserData(userData)
+        JSON.parse(user)
       } catch (error) {
         console.error('Error parsing user data:', error)
       }
@@ -159,7 +146,7 @@ export default function StorePage() {
         throw new Error(`Connection failed: ${errorText}`)
       }
 
-      const result = await response.json()
+      await response.json()
       setSuccess('Connection successful! Store is properly configured.')
       
       // Clear success message after 3 seconds
@@ -219,7 +206,7 @@ export default function StorePage() {
       } else {
         setMessage(data.message || 'Failed to save store information.')
       }
-    } catch (error) {
+    } catch {
       setMessage('Failed to save store information. Please try again.')
     } finally {
       setIsSaving(false)
@@ -502,11 +489,11 @@ export default function StorePage() {
               </div>
               <div className="flex items-start space-x-2">
                 <span className="flex-shrink-0 w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800">3</span>
-                <p>Click <strong>"Add Key"</strong> to create a new API key</p>
+                <p>Click <strong>&quot;Add Key&quot;</strong> to create a new API key</p>
               </div>
               <div className="flex items-start space-x-2">
                 <span className="flex-shrink-0 w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800">4</span>
-                <p>Set permissions to <strong>"Read/Write"</strong></p>
+                <p>Set permissions to <strong>&quot;Read/Write&quot;</strong></p>
               </div>
               <div className="flex items-start space-x-2">
                 <span className="flex-shrink-0 w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800">5</span>

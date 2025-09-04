@@ -262,7 +262,7 @@ export default function PaymentSuccessPage() {
 
         {/* Additional Info */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">What's Next?</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">What&apos;s Next?</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">

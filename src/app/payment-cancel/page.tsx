@@ -32,7 +32,6 @@ export default function PaymentCancelPage() {
         // Get cancellation details from URL params
         const transactionId = searchParams.get('transaction_id') || searchParams.get('id')
         const reason = searchParams.get('reason') || searchParams.get('error')
-        const status = searchParams.get('status')
         
         if (transactionId) {
           // Try to fetch cancellation details from backend
@@ -61,7 +60,7 @@ export default function PaymentCancelPage() {
                 timestamp: new Date().toISOString()
               })
             }
-          } catch (err) {
+          } catch {
             // Fallback to URL params
             setCancelData({
               transactionId,

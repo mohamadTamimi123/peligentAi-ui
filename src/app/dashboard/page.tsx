@@ -3,27 +3,20 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { 
   RefreshCw, 
   Settings,
   ShoppingBag,
   Users,
   Zap,
-  TrendingUp,
-  Lightbulb,
   Copy,
   Check,
   Key,
-  ExternalLink,
   Store,
-  CreditCard,
   Package,
   BarChart3,
-  Calendar,
   DollarSign,
-  Activity,
-  Globe
+  Activity
 } from 'lucide-react'
 
 export default function DashboardPage() {
@@ -253,7 +246,7 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-semibold text-gray-900 mb-1">
             Welcome back, {userData.firstName}
           </h2>
-          <p className="text-gray-500">Here's your store overview</p>
+          <p className="text-gray-500">Here&apos;s your store overview</p>
         </div>
 
         {/* Stats Grid */}

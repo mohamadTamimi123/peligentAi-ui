@@ -57,7 +57,7 @@ export default function PaymentSuccessPage() {
             // Fallback to URL params
             setPaymentData({
               transactionId,
-              status,
+              status: status || 'success',
               timestamp: new Date().toISOString()
             })
           }

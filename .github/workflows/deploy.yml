@@ -10,97 +10,82 @@ env:
   NODE_VERSION: '18'
 
 jobs:
-  # Build and Test Job
+  # -----------------------
+  # Build & Test Job
+  # -----------------------
   build-and-test:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
         
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
       
-    - name: Run linting
-      run: npm run lint
+      - name: Run linting
+        run: npm run lint
       
-    - name: Run type checking
-      run: npm run type-check
+      - name: Run type checking
+        run: npm run type-check
       
-    - name: Build application
-      run: npm run build
+      - name: Build application
+        run: npm run build
       
-    - name: Run tests (if available)
-      run: npm test --if-present
-      
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-files
-        path: .next/
-        retention-days: 1
+      - name: Run tests (if available)
+        run: npm test --if-present
 
-  # Deploy to Production (only on main/master branch push)
+  # -----------------------
+  # Deploy Job
+  # -----------------------
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build for production
-      run: npm run build
-      env:
-        NODE_ENV: production
-        
-    - name: Deploy to server
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USERNAME }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        port: ${{ secrets.SERVER_PORT }}
-        script: |
-          # Create target directory if it doesn't exist
-          mkdir -p /home/dev/app/ui
-          
-          # Copy built files to target directory
-          cp -r /home/tmp/Documents/agent-ui/.next /home/dev/app/ui/
-          cp -r /home/tmp/Documents/agent-ui/public /home/dev/app/ui/
-          cp /home/tmp/Documents/agent-ui/package.json /home/dev/app/ui/
-          cp /home/tmp/Documents/agent-ui/next.config.ts /home/dev/app/ui/
-          
-          # Install production dependencies in target directory
-          cd /home/dev/app/ui
-          npm ci --production
-          
-          # Start the application
-          npm start
-          
-          echo "Deployment to /home/dev/app/ui completed successfully"
-          
-    - name: Notify deployment status
-      if: always()
-      run: |
-        if [ ${{ job.status }} == 'success' ]; then
-          echo "✅ Deployment successful"
-        else
-          echo "❌ Deployment failed"
-        fi
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            set -e
+
+            # مسیر پروژه روی سرور
+            APP_DIR=/home/dev/app/ui
+
+            # اگر پوشه وجود نداره کلون کن
+            if [ ! -d "$APP_DIR" ]; then
+              mkdir -p /home/dev/app
+              cd /home/dev/app
+              git clone https://github.com/<YOUR_USERNAME>/<YOUR_REPO>.git ui
+            fi
+
+            cd $APP_DIR
+
+            # برو به آخرین نسخه
+            git reset --hard
+            git pull origin main
+
+            # نصب پکیج‌ها و بیلد
+            npm ci
+            npm run build
+
+            # اجرای برنامه با pm2
+            if ! pm2 describe agent-ui > /dev/null; then
+              pm2 start npm --name "agent-ui" -- start
+            else
+              pm2 restart agent-ui
+            fi
+
+            pm2 save
+            echo "🚀 Deployment finished successfully"

@@ -1,10 +1,10 @@
 module.exports = {
   apps: [
     {
-      name: 'peligent-app',
+      name: 'agent-ui',
       script: 'npm',
       args: 'start',
-      cwd: '/root/peligent',
+      cwd: '/home/dev/app/ui',
       instances: 'max', // Use all available CPU cores
       exec_mode: 'cluster',
       env: {
@@ -17,9 +17,9 @@ module.exports = {
         PORT: 3000
       },
       // Logging
-      log_file: '/root/logs/peligent-app.log',
-      out_file: '/root/logs/peligent-app-out.log',
-      error_file: '/root/logs/peligent-app-error.log',
+      log_file: '/home/dev/logs/agent-ui.log',
+      out_file: '/home/dev/logs/agent-ui-out.log',
+      error_file: '/home/dev/logs/agent-ui-error.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       
       // Performance
@@ -54,11 +54,11 @@ module.exports = {
   // Deployment configuration
   deploy: {
     production: {
-      user: 'root',
+      user: 'dev',
       host: 'localhost',
       ref: 'origin/main',
-      repo: 'git@github.com:yourusername/peligent.git',
-      path: '/root/peligent',
+      repo: 'https://github.com/Pariant/agent-ui.git',
+      path: '/home/dev/app/ui',
       'pre-deploy-local': '',
       'post-deploy': 'npm ci && npm run build && pm2 reload ecosystem.config.js --env production',
       'pre-setup': ''

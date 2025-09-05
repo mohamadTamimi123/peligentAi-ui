@@ -61,31 +61,28 @@ jobs:
             set -e
 
             APP_DIR=/home/***/app/ui
-            REPO_URL=https://github.com/Peligent/agent-ui.git
+            REPO_URL=https://github.com/Pariant/agent-ui.git
 
-        
+           
 
-            # اگر پوشه وجود دارد ولی git repo نیست → پاک کن
-            if [ -d "$APP_DIR" ] && [ ! -d "$APP_DIR/.git" ]; then
-              echo "⚠️ $APP_DIR exists but is not a git repo. Removing..."
+            # اگر repo وجود دارد → فقط update کن
+            if [ -d "$APP_DIR/.git" ]; then
+              echo "✅ Repository exists. Updating..."
+              cd $APP_DIR
+              git fetch origin
+              if git rev-parse --verify origin/main >/dev/null 2>&1; then
+                git reset --hard origin/main
+              else
+                git reset --hard origin/master
+              fi
+            else
+              # اگر repo وجود ندارد → کلون جدید بگیر
+              echo "⚠️ Repository does not exist. Cloning..."
               rm -rf "$APP_DIR"
-            fi
-
-            # اگر پوشه وجود ندارد → کلون کن
-            if [ ! -d "$APP_DIR" ]; then
               mkdir -p /home/***/app
               cd /home/***/app
               git clone $REPO_URL ui
-            fi
-
-            cd $APP_DIR
-
-            # برو به آخرین نسخه main یا master
-            git fetch origin
-            if git rev-parse --verify origin/main >/dev/null 2>&1; then
-              git reset --hard origin/main
-            else
-              git reset --hard origin/master
+              cd $APP_DIR
             fi
 
             # نصب پکیج‌ها و بیلد
@@ -93,7 +90,7 @@ jobs:
             npm run build
 
             # اجرای برنامه با pm2
-            if ! pm2 describe agent-ui > /dev/null; then
+            if ! pm2 describe agent-ui >/dev/null; then
               pm2 start npm --name "agent-ui" -- start
             else
               pm2 restart agent-ui

@@ -58,43 +58,42 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
-            set -e
-
-            APP_DIR=/home/***/app/ui
-            REPO_URL=https://github.com/Pariant/agent-ui.git
-
-           
-
-            # اگر repo وجود دارد → فقط update کن
-            if [ -d "$APP_DIR/.git" ]; then
-              echo "✅ Repository exists. Updating..."
-              cd $APP_DIR
-              git fetch origin
-              if git rev-parse --verify origin/main >/dev/null 2>&1; then
-                git reset --hard origin/main
-              else
-                git reset --hard origin/master
-              fi
-            else
-              # اگر repo وجود ندارد → کلون جدید بگیر
-              echo "⚠️ Repository does not exist. Cloning..."
-              rm -rf "$APP_DIR"
-              mkdir -p /home/***/app
-              cd /home/***/app
-              git clone $REPO_URL ui
-              cd $APP_DIR
-            fi
-
-            # نصب پکیج‌ها و بیلد
-            npm ci
-            npm run build
-
-            # اجرای برنامه با pm2
-            if ! pm2 describe agent-ui >/dev/null; then
-              pm2 start npm --name "agent-ui" -- start
-            else
-              pm2 restart agent-ui
-            fi
-
-            pm2 save
-            echo "🚀 Deployment finished successfully"
+             set -e
+ 
+             APP_DIR=/home/dev/app/ui
+             REPO_URL=https://github.com/Pariant/agent-ui.git
+ 
+             # اگر repo وجود دارد → فقط update کن
+             if [ -d "$APP_DIR/.git" ]; then
+               echo "✅ Repository exists. Updating..."
+               cd $APP_DIR
+               git fetch origin
+               if git rev-parse --verify origin/main >/dev/null 2>&1; then
+                 git reset --hard origin/main
+               else
+                 git reset --hard origin/master
+               fi
+             else
+               # اگر repo وجود ندارد → کلون جدید بگیر
+               echo "⚠️ Repository does not exist. Cloning..."
+               # حذف کامل دایرکتوری موجود
+               rm -rf "$APP_DIR"
+               mkdir -p /home/dev/app
+               cd /home/dev/app
+               git clone $REPO_URL ui
+               cd $APP_DIR
+             fi
+ 
+             # نصب پکیج‌ها و بیلد
+             npm ci
+             npm run build
+ 
+             # اجرای برنامه با pm2
+             if ! pm2 describe agent-ui >/dev/null 2>&1; then
+               pm2 start npm --name "agent-ui" -- start
+             else
+               pm2 restart agent-ui
+             fi
+ 
+             pm2 save
+             echo "🚀 Deployment finished successfully"

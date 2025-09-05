@@ -10,12 +10,8 @@ env:
   NODE_VERSION: '18'
 
 jobs:
-  # -----------------------
-  # Build & Test Job
-  # -----------------------
   build-and-test:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,9 +37,6 @@ jobs:
       - name: Run tests (if available)
         run: npm test --if-present
 
-  # -----------------------
-  # Deploy Job
-  # -----------------------
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
@@ -60,21 +53,27 @@ jobs:
           script: |
             set -e
 
-            # مسیر پروژه روی سرور
-            APP_DIR=/home/dev/app/ui
+            APP_DIR=/home/***/app/ui
+            REPO_URL=https://github.com/<YOUR_USERNAME>/<YOUR_REPO>.git
 
-            # اگر پوشه وجود نداره کلون کن
-            if [ ! -d "$APP_DIR" ]; then
-              mkdir -p /home/dev/app
-              cd /home/dev/app
-              git clone https://github.com/<YOUR_USERNAME>/<YOUR_REPO>.git ui
+            # اگر ریپو private است از GitHub Token استفاده کن
+            if [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
+              REPO_URL=https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/<YOUR_USERNAME>/<YOUR_REPO>.git
+            fi
+
+            # اگر پوشه نیست یا گیت نداره، دوباره کلون کن
+            if [ ! -d "$APP_DIR/.git" ]; then
+              rm -rf "$APP_DIR"
+              mkdir -p /home/***/app
+              cd /home/***/app
+              git clone $REPO_URL ui
             fi
 
             cd $APP_DIR
 
             # برو به آخرین نسخه
-            git reset --hard
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
 
             # نصب پکیج‌ها و بیلد
             npm ci

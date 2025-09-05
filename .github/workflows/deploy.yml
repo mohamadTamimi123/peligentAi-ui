@@ -78,12 +78,23 @@ jobs:
         key: ${{ secrets.SERVER_SSH_KEY }}
         port: ${{ secrets.SERVER_PORT }}
         script: |
-          cd /root/peligent
-          git pull origin main
-          npm ci
-          npm run build
-          pm2 restart all
-          echo "Deployment completed successfully"
+          # Create target directory if it doesn't exist
+          mkdir -p /home/dev/app/ui
+          
+          # Copy built files to target directory
+          cp -r /home/tmp/Documents/agent-ui/.next /home/dev/app/ui/
+          cp -r /home/tmp/Documents/agent-ui/public /home/dev/app/ui/
+          cp /home/tmp/Documents/agent-ui/package.json /home/dev/app/ui/
+          cp /home/tmp/Documents/agent-ui/next.config.ts /home/dev/app/ui/
+          
+          # Install production dependencies in target directory
+          cd /home/dev/app/ui
+          npm ci --production
+          
+          # Start the application
+          npm start
+          
+          echo "Deployment to /home/dev/app/ui completed successfully"
           
     - name: Notify deployment status
       if: always()

@@ -54,12 +54,9 @@ jobs:
             set -e
 
             APP_DIR=/home/***/app/ui
-            REPO_URL=https://github.com/<YOUR_USERNAME>/<YOUR_REPO>.git
+            REPO_URL=https://github.com/mohamadTamimi123/peligentAi-ui
 
-            # اگر ریپو private است از GitHub Token استفاده کن
-            if [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
-              REPO_URL=https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/<YOUR_USERNAME>/<YOUR_REPO>.git
-            fi
+          
 
             # اگر پوشه نیست یا گیت نداره، دوباره کلون کن
             if [ ! -d "$APP_DIR/.git" ]; then

@@ -10,8 +10,12 @@ env:
   NODE_VERSION: '18'
 
 jobs:
+  # -----------------------
+  # Build & Test Job
+  # -----------------------
   build-and-test:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,6 +41,9 @@ jobs:
       - name: Run tests (if available)
         run: npm test --if-present
 
+  # -----------------------
+  # Deploy Job
+  # -----------------------
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
@@ -58,7 +65,7 @@ jobs:
 
           
 
-            # اگر پوشه نیست یا گیت نداره، دوباره کلون کن
+            # اگر پوشه وجود نداره یا گیت نیست → پاک کن و دوباره کلون کن
             if [ ! -d "$APP_DIR/.git" ]; then
               rm -rf "$APP_DIR"
               mkdir -p /home/***/app
@@ -68,9 +75,13 @@ jobs:
 
             cd $APP_DIR
 
-            # برو به آخرین نسخه
-            git fetch origin main
-            git reset --hard origin/main
+            # برو به آخرین نسخه main یا master
+            git fetch origin
+            if git rev-parse --verify origin/main >/dev/null 2>&1; then
+              git reset --hard origin/main
+            else
+              git reset --hard origin/master
+            fi
 
             # نصب پکیج‌ها و بیلد
             npm ci
